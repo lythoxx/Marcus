@@ -1,5 +1,6 @@
 from json import dump, load
 import os
+from dotenv import load_dotenv
 
 class Config:
 
@@ -59,3 +60,8 @@ class Config:
             config["alarms"][section].remove(name)
             with open(os.path.join(Config.config_path, "task.json"), "w") as f:
                 dump(config, f, indent=4)
+
+    @staticmethod
+    def get_openai_key():
+        load_dotenv()
+        return os.getenv("OPENAI_API_KEY")

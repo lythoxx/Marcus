@@ -73,30 +73,30 @@ class Commands(Enum):
         nlp = spacy.load("en_core_web_sm")
         tts = TTS()
         speech = Speech()
-        tts.speak("Starting setup.")
-        tts.speak("Please tell me my name.")
+        tts.speak_openai("Starting setup.")
+        tts.speak_openai("Please tell me my name.")
         user_input = speech.recognize()
         if user_input:
             doc = nlp(user_input)
             entities = [ent.text for ent in doc.ents]
             print(entities)
             if len(entities) > 1:
-                tts.speak("It seems you provided more than one name.")
-                tts.speak("I will use the first name provided.")
-                tts.speak("You can change the name anytime again.")
+                tts.speak_openai("It seems you provided more than one name.")
+                tts.speak_openai("I will use the first name provided.")
+                tts.speak_openai("You can change the name anytime again.")
                 Config.set_name(entities[0])
-                tts.speak("Set name to " + entities[0])
+                tts.speak_openai("Set name to " + entities[0])
             elif len(entities) == 0:
-                tts.speak("No name provided. I will use the default name.")
-                tts.speak("You can change the name anytime again.")
+                tts.speak_openai("No name provided. I will use the default name.")
+                tts.speak_openai("You can change the name anytime again.")
                 Config.set_name("Marcus")
-                tts.speak("Set name to Marcus")
+                tts.speak_openai("Set name to Marcus")
             else:
                 Config.set_name(entities[0])
-                tts.speak("Set name to " + entities[0])
-                tts.speak("You can change the name anytime again.")
+                tts.speak_openai("Set name to " + entities[0])
+                tts.speak_openai("You can change the name anytime again.")
 
-        tts.speak("Setup complete.")
+        tts.speak_openai("Setup complete.")
 
         return True
 
@@ -105,42 +105,42 @@ class Commands(Enum):
 
     def exit():
         tts = TTS()
-        tts.speak("Goodbye. I hope I was helpful.")
+        tts.speak_openai("Goodbye. I hope I was helpful.")
         sys.exit(0)
 
     def test() -> bool:
         tts = TTS()
-        tts.speak("You activated the test command")
-        tts.speak("It worked!")
-        tts.speak("Test completed")
+        tts.speak_openai("You activated the test command")
+        tts.speak_openai("It worked!")
+        tts.speak_openai("Test completed")
         return True
 
     def alarm(times) -> bool:
         print(times)
         tts = TTS()
         if len(times) == 0:
-            tts.speak("It seems you didn't provide a time for the alarm.")
-            tts.speak("Please provide a time when setting an alarm.")
+            tts.speak_openai("It seems you didn't provide a time for the alarm.")
+            tts.speak_openai("Please provide a time when setting an alarm.")
             return False
         time = times[0]
         if len(times) > 1:
-            tts.speak("It seems you provided more than one time. I will use the first time provided.")
+            tts.speak_openai("It seems you provided more than one time. I will use the first time provided.")
         try:
             alarm_time = parser.parse(time)
         except ValueError:
-            tts.speak("It seems you provided an invalid time. Please provide a valid time.")
+            tts.speak_openai("It seems you provided an invalid time. Please provide a valid time.")
             return False
 
         print(alarm_time.strftime("%H:%M:%S"))
-        tts.speak("Do you want to set a name for the alarm?")
+        tts.speak_openai("Do you want to set a name for the alarm?")
         speech = Speech()
         answer = speech.recognize()
         if answer:
             if "no" in answer.lower():
                 Config.set_alarm(alarm_time.strftime("%H:%M:%S"))
-                tts.speak("Alarm set to " + alarm_time.strftime("%H:%M:%S") + ".")
+                tts.speak_openai("Alarm set to " + alarm_time.strftime("%H:%M:%S") + ".")
             else:
                 name = answer
                 Config.set_alarm(alarm_time.strftime("%H:%M:%S"), name)
-                tts.speak("Alarm set to " + alarm_time.strftime("%H:%M:%S") + " with name " + name + ".")
+                tts.speak_openai("Alarm set to " + alarm_time.strftime("%H:%M:%S") + " with name " + name + ".")
         return True

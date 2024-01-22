@@ -1,4 +1,6 @@
 tests/
 __pycache__/
 src/components/models/*.gguf
-src/components/assets/sounds/*.mp3
+output/
+config/*.json
+*.env

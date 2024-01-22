@@ -1,7 +1,6 @@
 import datetime
 import time
-import pygame
-import requests
+from playsound import playsound
 from src.components.commands import Commands
 from src.components.gpt import GPT
 from src.components.speech import Speech
@@ -22,7 +21,8 @@ def main():
                 "config_path": os.path.join(os.getcwd(), "config"),
                 "asset_path": os.path.join(os.getcwd(), "src", "components", "assets"),
                 "model_path": os.path.join(os.getcwd(), "src", "components", "models"),
-                "gpt_model": "mistral-7b-openorca.Q4_0.gguf"
+                "gpt_model_local": "mistral-7b-openorca.Q4_0.gguf",
+                "gpt_model": "gpt-3.5-turbo",
             }
             dump(config, f, indent=4)
     if not Config.config_exists("task"):
@@ -37,14 +37,11 @@ def main():
 
     speech = Speech()
     tts = TTS()
-    if not os.path.exists(os.path.join(os.getcwd(), "src", "components", "models", "mistral-7b-openorca.Q4_0.gguf")):
-        tts.speak("Downloading AI model...")
-    tts.speak("Loading AI model...")
-    gpt = GPT(Config.get_name())
-    tts.speak("Loading input processor...")
+    # if not os.path.exists(os.path.join(os.getcwd(), "src", "components", "models", "mistral-7b-openorca.Q4_0.gguf")):
+    #     tts.speak_openai("Downloading AI model...")
+    gpt = GPT()
     processor = Processor()
-    tts.speak("All systems initialized")
-    tts.speak(f"My name is {Config.get_name()}. How can I help you today?")
+    tts.speak_openai(f"My name is {Config.get_name()}. How can I help you today?")
 
     task_thread = threading.Thread(target=check_tasks, daemon=True, args=(stop_alarm_event,))
     task_thread.start()
@@ -53,12 +50,12 @@ def main():
         user_input = speech.recognize()
         if user_input:
             print(user_input)
-            tts.speak(user_input)
+            tts.speak_local(user_input)
             keywords, entities, times, all_keywords = processor.process_keywords(user_input)
             command = processor.process_command(keywords, entities, all_keywords)
             if command == None:
                 print("Asking AI")
-                tts.speak(gpt.prompt(user_input))
+                tts.speak_openai(gpt.prompt(user_input))
             elif command:
                 print("Running command")
                 if command == Commands.STOP_ALARM:
@@ -72,8 +69,6 @@ def main():
 
 
 def check_tasks(stop_alarm_event):
-    pygame.mixer.init()
-    alarm_sound = pygame.mixer.Sound(os.path.join(Config.get_config("config")["asset_path"], "sounds", "beep-beep-6151.mp3"))
     while True:
         alarms = Config.get_alarms()
         for unnamed in alarms["unnamed"]:
@@ -82,7 +77,7 @@ def check_tasks(stop_alarm_event):
                 print("An alarm is due!")  # Replace with actual task action
                 while not stop_alarm_event.wait(timeout=1):
                     print("Playing alarm sound")
-                    alarm_sound.play()
+                    playsound("src/components/assets/sounds/beep-beep-6151.mp3")
                     time.sleep(0.5)
 
                 print("Alarm stopped by user.")
