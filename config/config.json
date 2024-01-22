@@ -1,0 +1,6 @@
+{
+    "config_path": "G:\\coding\\Python\\speechrecognitionai\\config",
+    "asset_path": "G:\\coding\\Python\\speechrecognitionai\\src\\components\\assets",
+    "model_path": "G:\\coding\\Python\\speechrecognitionai\\src\\components\\models",
+    "gpt_model": "mistral-7b-openorca.Q4_0.gguf"
+}

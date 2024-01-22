@@ -1,0 +1,8 @@
+speechrecognition
+pyaudio
+numpy
+gpt4all
+pyttsx3
+soundfile
+spacy
+git+https://github.com/openai/whisper.git

@@ -1,0 +1,4 @@
+tests/
+__pycache__/
+src/components/models/*.gguf
+src/components/assets/sounds/*.mp3
