@@ -7,7 +7,7 @@ class GPT:
     # def __init__(self, name):
     #     self.name = name
     #     config = Config.get_config("config")
-    #     self.model = GPT4All(config["gpt_model"], model_path=config["model_path"], device="gpu")
+    #     self.model = GPT4All(config["gpt_model_local"], model_path=config["model_path"], device="gpu")
 
     # def prompt(self, prompt):
     #     session_template = f"Your name is {self.name}. You respond only when your name is said. You are supposed to respond naturally, so do not read out the link to a source, but tell me the name of the source only."
@@ -16,17 +16,16 @@ class GPT:
     #         return response
 
     def __init__(self):
-        config = Config.get_config("config")
-        self.model = OpenAI(api_key=config["openai_api_key"])
+        self.config = Config.get_config("config")
+        self.model = OpenAI(api_key=Config.get_openai_key())
 
     def prompt(self, prompt):
         completion = self.model.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model=self.config["gpt_model"],
             messages=[
-                {"role": "system", "content": f"Your name is {Config.get_name()}. You respond only when your name is said. You are supposed to respond naturally, so do not read out the link to a source, but tell me the name of the source only."},
+                {"role": "system", "content": f"Your name is {Config.get_name()}. You are supposed to respond naturally, so do not read out the link to a source, but tell me the name of the source only. Do not read create code. Instead explain th concepts behind the code."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=500
         )
         return completion.choices[0].message.content
-
