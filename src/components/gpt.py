@@ -23,7 +23,7 @@ class GPT:
         completion = self.model.chat.completions.create(
             model=self.config["gpt_model"],
             messages=[
-                {"role": "system", "content": f"Your name is {Config.get_name()}. You are supposed to respond naturally, so do not read out the link to a source, but tell me the name of the source only. Do not read create code. Instead explain th concepts behind the code."},
+                {"role": "system", "content": f"Your name is {Config.get_name()}. You are supposed to respond naturally, so do not read out the link to a source, but tell me the name of the source only. Do not read create code. Instead explain the concepts behind the code."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=500
