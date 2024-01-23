@@ -65,3 +65,8 @@ class Config:
     def get_openai_key():
         load_dotenv()
         return os.getenv("OPENAI_API_KEY")
+    
+    @staticmethod
+    def get_azure_key():
+        load_dotenv()
+        return os.getenv("AZURE_API_KEY")

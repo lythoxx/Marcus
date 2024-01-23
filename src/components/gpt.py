@@ -17,7 +17,7 @@ class GPT:
 
     def __init__(self):
         self.config = Config.get_config("config")
-        self.model = OpenAI(api_key=Config.get_openai_key())
+        self.model = OpenAI(api_key=Config.get_config("config")["openai_key"])
 
     def prompt(self, prompt):
         completion = self.model.chat.completions.create(

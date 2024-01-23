@@ -11,3 +11,4 @@ python-dotenv
 python-dateutil
 playsound==1.2.2
 openai-whisper
+fuzzy

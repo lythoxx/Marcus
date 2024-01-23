@@ -98,6 +98,11 @@ class Commands(Enum):
                 Config.set_name(entities[0])
                 tts.speak_openai("Set name to " + entities[0])
                 tts.speak_openai("You can change the name anytime again.")
+        else:
+            tts.speak_openai("No name provided. I will use the default name.")
+            tts.speak_openai("Set name to Marcus")
+            tts.speak_openai("You can change the name anytime again.")
+            Config.set_name("Marcus")
 
         tts.speak_openai("Setup complete.")
 

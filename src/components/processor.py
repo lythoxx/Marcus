@@ -3,6 +3,7 @@ import re
 
 from .commands import Commands
 from config.config import Config
+from src.utils import phonetic_compare
 
 class Processor:
 
@@ -47,4 +48,10 @@ class Processor:
         if config.get_name() in all_keywords or config.get_name().lower() in all_keywords:
             print("Found name")
             return Commands.get_command(keywords, entities, all_keywords)
-        else: return False
+        else:
+            for keyword in all_keywords:
+                if phonetic_compare(keyword, config.get_name()):
+                    print("Found name")
+                    return Commands.get_command(keywords, entities, all_keywords)
+            else:
+                return False
