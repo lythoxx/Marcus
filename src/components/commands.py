@@ -12,7 +12,7 @@ from dateutil import parser
 
 
 class Commands(Enum):
-    SETUP = ("setup",)
+    SETUP = ("setup","set up")
     HELP = ("help",)
     EXIT = ("exit",)
     TEST = ("test",)
@@ -25,6 +25,9 @@ class Commands(Enum):
             match(keyword.lower()):
                 case "setup":
                     print("Found setup")
+                    return Commands.SETUP
+                case "set up":
+                    print("Found set up")
                     return Commands.SETUP
                 case "help":
                     print("Found help")
@@ -83,14 +86,14 @@ class Commands(Enum):
             if len(entities) > 1:
                 tts.speak_openai("It seems you provided more than one name.")
                 tts.speak_openai("I will use the first name provided.")
+                tts.speak_openai("Set name to " + entities[0])
                 tts.speak_openai("You can change the name anytime again.")
                 Config.set_name(entities[0])
-                tts.speak_openai("Set name to " + entities[0])
             elif len(entities) == 0:
                 tts.speak_openai("No name provided. I will use the default name.")
+                tts.speak_openai("Set name to Marcus")
                 tts.speak_openai("You can change the name anytime again.")
                 Config.set_name("Marcus")
-                tts.speak_openai("Set name to Marcus")
             else:
                 Config.set_name(entities[0])
                 tts.speak_openai("Set name to " + entities[0])
