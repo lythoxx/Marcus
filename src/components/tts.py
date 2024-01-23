@@ -10,7 +10,7 @@ class TTS:
     def __init__(self):
         config = Config.get_config("config")
         self.engine = pyttsx3.init()
-        self.gpt = OpenAI(api_key=config["openai_api_key"])
+        self.gpt = OpenAI(api_key=Config.get_openai_key())
 
     def speak_local(self, text):
         self.engine.say(text)
