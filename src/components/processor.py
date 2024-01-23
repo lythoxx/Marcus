@@ -44,7 +44,6 @@ class Processor:
 
     def process_command(self, keywords: list, entities: list, all_keywords: list):
         config = Config()
-        print(all_keywords)
         if config.get_name() in all_keywords or config.get_name().lower() in all_keywords:
             print("Found name")
             return Commands.get_command(keywords, entities, all_keywords)
