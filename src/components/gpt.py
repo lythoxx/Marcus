@@ -1,4 +1,3 @@
-from gpt4all import GPT4All
 from config.config import Config
 from openai import OpenAI
 

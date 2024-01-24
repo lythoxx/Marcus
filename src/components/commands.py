@@ -7,7 +7,6 @@ from config.config import Config
 
 import spacy
 import sys
-import datetime
 from dateutil import parser
 
 
