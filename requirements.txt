@@ -1,3 +1,4 @@
+# main module
 audioread==3.0.1
 speechrecognition==3.10.1
 pyaudio==0.2.14
@@ -11,3 +12,6 @@ python-dateutil==2.8.2
 playsound==1.2.2
 openai-whisper==20231117
 fuzzy==1.2.2
+
+# interface
+flask==3.0.1

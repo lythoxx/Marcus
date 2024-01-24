@@ -1,3 +1,4 @@
+import socket
 from config.config import Config
 import datetime
 import time
@@ -31,3 +32,8 @@ def phonetic_compare(string_1: str, string_2: str):
 def get_phonetic(string):
     soundex = fuzzy.Soundex(4)
     return soundex(string)
+
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    return s.getsockname()[0]

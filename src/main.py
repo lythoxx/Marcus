@@ -6,6 +6,7 @@ from src.components.tts import TTS
 from src.components.processor import Processor
 from config.config import Config
 from json import dump
+from src.components.interface.interface import run
 
 import os
 import threading
@@ -42,7 +43,9 @@ def main():
     tts.speak_openai(f"My name is {Config.get_name()}. How can I help you today?")
 
     task_thread = threading.Thread(target=check_tasks, daemon=True, args=(stop_alarm_event,))
+    interface_thread = threading.Thread(target=run, daemon=False)
     task_thread.start()
+    interface_thread.start()
 
     while True:
         user_input = speech.recognize()
