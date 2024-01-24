@@ -141,7 +141,7 @@ class Commands(Enum):
         print(alarm_time.strftime("%H:%M:%S"))
         tts.speak_openai("Do you want to set a name for the alarm?")
         speech = Speech()
-        answer = speech.recognize()
+        answer = speech.recongnize_no_hotword()
         if answer:
             if "no" in answer.lower():
                 Config.set_alarm(alarm_time.strftime("%H:%M:%S"))
@@ -150,4 +150,7 @@ class Commands(Enum):
                 name = answer
                 Config.set_alarm(alarm_time.strftime("%H:%M:%S"), name)
                 tts.speak_openai("Alarm set to " + alarm_time.strftime("%H:%M:%S") + " with name " + name + ".")
+        else:
+            Config.set_alarm(alarm_time.strftime("%H:%M:%S"))
+            tts.speak_openai("Alarm set to " + alarm_time.strftime("%H:%M:%S") + ".")
         return True

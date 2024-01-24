@@ -58,3 +58,16 @@ class Speech:
                 except sr.UnknownValueError:
                     pass  # Hotword not detected in this chunk
 
+    def recongnize_no_hotword(self):
+        with self.microphone as source:
+            print("Listening...")
+            azure_key = Config.get_config("config")["azure_key"]
+            audio = self.recognizer.listen(source)
+            try:
+                return self.recognizer.recognize_azure(audio, azure_key, location="germanywestcentral", profanity="raw")[0]
+            except sr.UnknownValueError:
+                print("Azure could not understand the audio")
+                return None
+            except sr.RequestError:
+                print("Could not request results from Azure service")
+                return None
