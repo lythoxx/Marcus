@@ -4,6 +4,7 @@ import speech_recognition as sr
 
 from config.config import Config
 from src.utils import phonetic_compare
+from typing_extensions import deprecated
 
 
 class Speech:
@@ -17,6 +18,7 @@ class Speech:
         self.microphone = sr.Microphone()
         self.audio_buffer = queue.Queue()  # A queue to hold audio chunks
 
+    @deprecated
     def process_buffer(self):
         """
         Process the audio in the buffer and send it to Azure for full speech recognition
@@ -40,7 +42,8 @@ class Speech:
         except Exception as e:
             print(e)
 
-    def recognize(self):
+    @deprecated
+    def recognize_dynamic_hotword(self):
         with self.microphone as source:
             print("Listening...")
 
@@ -74,3 +77,4 @@ class Speech:
             except sr.RequestError:
                 print("Could not request results from Azure service")
                 return None
+

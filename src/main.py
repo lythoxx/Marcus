@@ -48,7 +48,7 @@ def main():
     interface_thread.start()
 
     while True:
-        user_input = speech.recognize()
+        user_input = speech.recognize_dynamic_hotword()
         if user_input:
             print(user_input)
             # tts.speak_local(user_input)
