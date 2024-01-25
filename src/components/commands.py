@@ -77,8 +77,9 @@ class Commands(Enum):
         speech = Speech()
         tts.speak_openai("Starting setup.")
         tts.speak_openai("Please tell me my name.")
-        user_input = speech.recognize()
+        user_input = speech.recognize_no_hotword()
         if user_input:
+            print(user_input)
             doc = nlp(user_input)
             entities = [ent.text for ent in doc.ents]
             print(entities)
@@ -141,7 +142,7 @@ class Commands(Enum):
         print(alarm_time.strftime("%H:%M:%S"))
         tts.speak_openai("Do you want to set a name for the alarm?")
         speech = Speech()
-        answer = speech.recongnize_no_hotword()
+        answer = speech.recognize_no_hotword()
         if answer:
             if "no" in answer.lower():
                 Config.set_alarm(alarm_time.strftime("%H:%M:%S"))

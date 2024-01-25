@@ -57,14 +57,19 @@ class Speech:
 
                 # Check the audio chunk for the hotword using whisper and phonetic matching
                 try:
-                    text = self.recognizer.recognize_whisper(audio)
+                    text = self.recognizer.recognize_whisper(audio, "tiny")
                     for word in text.lower().split(" "):
                         if phonetic_compare(word, Config.get_name()):
+                            print(f"Hotword detected: {text}")
                             return self.process_buffer()
+                    else:
+                        print("No hotword detected")
+                        print(text)
                 except sr.UnknownValueError:
+                    print("No hotword detected")
                     pass  # Hotword not detected in this chunk
 
-    def recongnize_no_hotword(self):
+    def recognize_no_hotword(self):
         with self.microphone as source:
             print("Listening...")
             azure_key = Config.get_config("config")["azure_key"]
