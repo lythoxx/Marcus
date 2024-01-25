@@ -43,7 +43,7 @@ def main():
     tts.speak_openai(f"My name is {Config.get_name()}. How can I help you today?")
 
     task_thread = threading.Thread(target=check_tasks, daemon=True, args=(stop_alarm_event,))
-    interface_thread = threading.Thread(target=run, daemon=False)
+    interface_thread = threading.Thread(target=run, daemon=True)
     task_thread.start()
     interface_thread.start()
 

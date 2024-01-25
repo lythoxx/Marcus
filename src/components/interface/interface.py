@@ -5,7 +5,7 @@ from config.config import Config
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
 
-    @app.route("/")
+    @app.route("/", methods=["GET", "POST"])
     def index():
         if request.method == "POST":
             Config.set_name(request.form["text"])
