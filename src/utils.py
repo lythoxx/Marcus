@@ -1,9 +1,12 @@
-import socket
-from config.config import Config
 import datetime
+import socket
 import time
+
 import fuzzy
 from playsound import playsound
+
+from config.config import Config
+
 
 def check_tasks(stop_alarm_event):
     while True:

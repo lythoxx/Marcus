@@ -1,7 +1,10 @@
-import speech_recognition as sr
 import queue
+
+import speech_recognition as sr
+
 from config.config import Config
 from src.utils import phonetic_compare
+
 
 class Speech:
 

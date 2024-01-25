@@ -1,15 +1,15 @@
-from src.utils import check_tasks
-from src.components.commands import Commands
-from src.components.gpt import GPT
-from src.components.speech import Speech
-from src.components.tts import TTS
-from src.components.processor import Processor
-from config.config import Config
-from json import dump
-from src.components.interface.interface import run
-
 import os
 import threading
+from json import dump
+
+from config.config import Config
+from src.components.commands import Commands
+from src.components.gpt import GPT
+from src.components.interface.interface import run
+from src.components.processor import Processor
+from src.components.speech import Speech
+from src.components.tts import TTS
+from src.utils import check_tasks
 
 stop_alarm_event = threading.Event()
 
@@ -21,7 +21,7 @@ def main():
                 "asset_path": os.path.join(os.getcwd(), "src", "components", "assets"),
                 "model_path": os.path.join(os.getcwd(), "src", "components", "models"),
                 "gpt_model_local": "mistral-7b-openorca.Q4_0.gguf",
-                "gpt_model": "gpt-3.5-turbo",
+                "gpt_model": "gpt-4-1106-preview",
             }
             dump(config, f, indent=4)
     if not Config.config_exists("task"):

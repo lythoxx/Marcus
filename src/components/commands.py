@@ -1,13 +1,13 @@
+import sys
 from enum import Enum
 
-from .speech import Speech
-from .tts import TTS
+import spacy
+from dateutil import parser
 
 from config.config import Config
 
-import spacy
-import sys
-from dateutil import parser
+from .speech import Speech
+from .tts import TTS
 
 
 class Commands(Enum):

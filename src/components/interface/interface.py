@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request
-from src.utils import get_ip
+
 from config.config import Config
+from src.utils import get_ip
+
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)

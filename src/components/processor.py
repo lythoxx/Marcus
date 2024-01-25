@@ -1,9 +1,12 @@
-import spacy
 import re
 
-from .commands import Commands
+import spacy
+
 from config.config import Config
 from src.utils import phonetic_compare
+
+from .commands import Commands
+
 
 class Processor:
 

@@ -1,9 +1,12 @@
 import os
-import pyttsx3
+
 import audioread
 import pyaudio
+import pyttsx3
 from openai import OpenAI
+
 from config.config import Config
+
 
 class TTS:
 
