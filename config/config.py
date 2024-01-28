@@ -1,3 +1,4 @@
+import datetime
 from json import dump, load
 import os
 from dotenv import load_dotenv
@@ -17,9 +18,7 @@ class Config:
 
     @staticmethod
     def get_name():
-        with open(os.path.join(Config.config_path, f"setup.json"), "r") as f:
-            config = load(f)
-            return config["name"]
+        return "Marcus"
 
     @staticmethod
     def set_name(name):
@@ -36,15 +35,19 @@ class Config:
             return config
 
     @staticmethod
-    def set_alarm(time, name=None):
+    def set_alarm(time, days:str=None):
         with open(os.path.join(Config.config_path, "task.json"), "r") as f:
             tasks = load(f)
         with open(os.path.join(Config.config_path, "task.json"), "w") as f:
-            if name:
-                tasks["alarms"][name] = time
+            if days:
+                if datetime.datetime.strptime(time, "%H:%M") < datetime.datetime.now():
+                    pending = True
+                tasks["recurring_alarms"].append({"time": time, "days": days, "pending": pending})
                 dump(tasks, f, indent=4)
             else:
-                tasks["alarms"]["unnamed"].append(time)
+                if datetime.datetime.strptime(time, "%H:%M") < datetime.datetime.now():
+                    pending = True
+                tasks["alarms"]["unnamed"].append({"time": time, "pending": pending})
                 dump(tasks, f, indent=4)
 
     @staticmethod
@@ -52,12 +55,18 @@ class Config:
         with open(os.path.join(Config.config_path, "task.json"), "r") as f:
             tasks = load(f)
             return tasks["alarms"]
+        
+    @staticmethod
+    def get_recurring_alarms():
+        with open(os.path.join(Config.config_path, "task.json"), "r") as f:
+            tasks = load(f)
+            return tasks["recurring_alarms"]
 
     @staticmethod
-    def remove_alarm(section, name):
+    def remove_alarm(index):
         with open(os.path.join(Config.config_path, "task.json"), "r") as f:
             config = load(f)
-            config["alarms"][section].remove(name)
+            config["alarms"].remove(index)
             with open(os.path.join(Config.config_path, "task.json"), "w") as f:
                 dump(config, f, indent=4)
 
@@ -65,7 +74,7 @@ class Config:
     def get_openai_key():
         load_dotenv()
         return os.getenv("OPENAI_API_KEY")
-    
+
     @staticmethod
     def get_azure_key():
         load_dotenv()

@@ -93,7 +93,7 @@ class Speech:
         # Or you can use None to use the default microphone
         audio_config = speechsdk.AudioConfig(use_default_microphone=True)
 
-        speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
+        speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config, language="de-DE")
         print("Listening...")
 
         try:

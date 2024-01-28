@@ -10,7 +10,8 @@ def create_app():
     @app.route("/", methods=["GET", "POST"])
     def index():
         if request.method == "POST":
-            Config.set_name(request.form["text"])
+            pass
+            # Config.set_name(request.form["text"])
         return render_template("index.html")
 
     return app

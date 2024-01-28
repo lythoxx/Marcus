@@ -2,8 +2,7 @@ import re
 
 import spacy
 
-from config.config import Config
-from src.utils import phonetic_compare
+import utils
 
 from .commands import Commands
 
@@ -15,16 +14,12 @@ class Processor:
         self.nlp = spacy.load("en_core_web_sm")
 
     def process_keywords(self, text):
+
+        text = utils.translate_en(text)
+
         doc = self.nlp(text)
 
-        time_pattern = re.compile(r'(\d{1,2})\.(\d{2})([ap]m)', re.IGNORECASE)
-
-        sentences = list(doc.sents)
-
-        for sentence in sentences:
-            if Config.get_name() in sentence.text:
-                doc = sentence
-                break
+        # time_pattern = re.compile(r'(\d{1,2})\.(\d{2})([ap]m)', re.IGNORECASE)
 
         # Extract keywords based on part-of-speech tags
         keywords = [token.text for token in doc if token.pos_ in ('NOUN', 'PROPN', 'VERB')]
@@ -38,11 +33,6 @@ class Processor:
         all_keywords = list(set(keywords + entities + times))
 
         print("All keywords: ", all_keywords)
-
-        for keyword in all_keywords:
-            if time_pattern.match(keyword):
-                keyword = keyword.replace(".", ":")
-                times.append(keyword)
 
         return keywords, entities, times, all_keywords
 

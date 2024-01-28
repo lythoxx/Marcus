@@ -12,6 +12,32 @@ from src.components.tts import TTS
 from src.utils import check_tasks
 
 stop_alarm_event = threading.Event()
+stop_music_event = threading.Event()
+
+music_thread = None
+
+def play_music_thread(query, stop_music_event, type="songs"):
+    Commands.play_music(query, stop_music_event, type)
+
+def manage_music_thread(command, user_input):
+    global music_thread
+
+    if command == Commands.PLAY_MUSIC:
+        query_parts = user_input.lower().split("play", 1)
+        music_query = {"query": query_parts[1]}
+
+        if music_thread is not None and music_thread.is_alive():
+            stop_music_event.set()
+            music_thread.join()
+
+        stop_music_event.clear()
+        music_thread = threading.Thread(target=play_music_thread, daemon=True, args=(music_query, stop_music_event))
+        music_thread.start()
+
+    elif command == Commands.STOP:
+        if music_thread is not None and music_thread.is_alive():
+            stop_music_event.set()
+            music_thread.join()
 
 def main():
     if not Config.config_exists("config"):
@@ -31,8 +57,9 @@ def main():
                     "unnamed": []
                 }
             }, f, indent=4)
-    if not Config.config_exists("setup"):
-        Commands.run_command(Commands.SETUP)
+
+    task_thread = threading.Thread(target=check_tasks, daemon=True, args=(stop_music_event,))
+    interface_thread = threading.Thread(target=run, daemon=True)
 
     speech = Speech()
     tts = TTS()
@@ -40,10 +67,8 @@ def main():
     #     tts.speak_openai("Downloading AI model...")
     gpt = GPT()
     processor = Processor()
-    tts.speak_openai(f"My name is {Config.get_name()}. How can I help you today?")
+    tts.speak_openai(f"Mein Name ist {Config.get_name()}. Wie kann ich behilflich sein?")
 
-    task_thread = threading.Thread(target=check_tasks, daemon=True, args=(stop_alarm_event,))
-    interface_thread = threading.Thread(target=run, daemon=True)
     task_thread.start()
     interface_thread.start()
 
@@ -52,18 +77,20 @@ def main():
         if user_input:
             print(user_input)
             # tts.speak_local(user_input)
-            keywords, entities, times, all_keywords = processor.process_keywords(user_input)
-            command = processor.process_command(keywords, entities, all_keywords)
+            keywords, entities, times, verbs, all_keywords = processor.process_keywords(user_input)
+            command = processor.process_command(keywords, entities, verbs, all_keywords)
             if command == None:
                 print("Asking AI")
                 tts.speak_openai(gpt.prompt(user_input))
             elif command:
                 print("Running command")
-                if command == Commands.STOP_ALARM:
-                    stop_alarm_event.set()
-                    Commands.run_command(command)
+                if command == Commands.STOP:
+                    # TODO ALARM CHECKING
+                    manage_music_thread(command, user_input)
+                elif command == Commands.PLAY_MUSIC:
+                    manage_music_thread(command, user_input)
                 else:
-                    Commands.run_command(command, all_keywords, times)
+                    Commands.run_command(command, all_keywords, verbs, times)
             else:
                 print("Nothing happened")
                 pass

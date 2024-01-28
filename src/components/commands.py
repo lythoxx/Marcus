@@ -1,33 +1,39 @@
 import sys
 from enum import Enum
+import requests
 
 import spacy
 from dateutil import parser
+from pytube import YouTube
+from ytmusicapi import YTMusic
 
 from config.config import Config
+
+from src import utils
 
 from .speech import Speech
 from .tts import TTS
 
 
 class Commands(Enum):
-    SETUP = ("setup","set up")
     HELP = ("help",)
     EXIT = ("exit",)
     TEST = ("test",)
     ALARM = ("alarm", "wake")
-    STOP_ALARM = ("stop", "stop alarm")
+    STOP = ("stop",)
+    PLAY_MUSIC = ("play",)
+    WEATHER = ("weather", "forecast", "temperature")
 
-    def get_command(keywords: list, entities: list, all_keywords: list):
+    def get_command(keywords: list, entities: list, verbs: list, all_keywords: list):
         for keyword in all_keywords:
             print(keyword)
-            match(keyword.lower()):
-                case "setup":
-                    print("Found setup")
-                    return Commands.SETUP
-                case "set up":
-                    print("Found set up")
-                    return Commands.SETUP
+            match keyword.lower():
+                # case "setup":
+                #     print("Found setup")
+                #     return Commands.SETUP
+                # case "set up":
+                #     print("Found set up")
+                #     return Commands.SETUP
                 case "help":
                     print("Found help")
                     return Commands.HELP
@@ -37,27 +43,27 @@ class Commands(Enum):
                 case "test":
                     print("Found test")
                     return Commands.TEST
-                case "alarm":
+                case "alarm" | "wake":
                     print("Found alarm")
                     if "stop" in all_keywords:
-                        return Commands.STOP_ALARM
-                    return Commands.ALARM
-                case "wake":
-                    print("Found wake")
+                        return Commands.STOP
                     return Commands.ALARM
                 case "stop":
                     print("Found stop")
-                    return Commands.STOP_ALARM
-                case "stop alarm":
-                    print("Found stop alarm")
-                    return Commands.STOP_ALARM
+                    return Commands.STOP
+                case "play":
+                    print("Found play")
+                    return Commands.PLAY_MUSIC
+                case "weather" | "forecast" | "temperature":
+                    print("Found weather")
+                    return Commands.WEATHER
         else:
             return None
 
-    def run_command(command, all_keywords=None, times=None) -> bool:
-        match(command):
-            case Commands.SETUP:
-                return Commands.setup()
+    def run_command(command, all_keywords=None, times=None, verbs=None, music_query=None) -> bool:
+        match command:
+            # case Commands.SETUP:
+            #     return Commands.setup()
             case Commands.HELP:
                 return Commands.help()
             case Commands.EXIT:
@@ -66,92 +72,146 @@ class Commands(Enum):
                 return Commands.test()
             case Commands.ALARM:
                 return Commands.alarm(times)
+            case Commands.PLAY_MUSIC:
+                return Commands.play_music(music_query)
+            case Commands.WEATHER:
+                return Commands.weather()
             case _:
                 return False
 
 
-    def setup() -> bool:
-        Config.create_config("setup")
-        nlp = spacy.load("en_core_web_sm")
-        tts = TTS()
-        speech = Speech()
-        tts.speak_openai("Starting setup.")
-        tts.speak_openai("Please tell me my name.")
-        user_input = speech.recognize_no_hotword()
-        if user_input:
-            print(user_input)
-            doc = nlp(user_input)
-            entities = [ent.text for ent in doc.ents]
-            print(entities)
-            if len(entities) > 1:
-                tts.speak_openai("It seems you provided more than one name.")
-                tts.speak_openai("I will use the first name provided.")
-                tts.speak_openai("Set name to " + entities[0])
-                tts.speak_openai("You can change the name anytime again.")
-                Config.set_name(entities[0])
-            elif len(entities) == 0:
-                tts.speak_openai("No name provided. I will use the default name.")
-                tts.speak_openai("Set name to Marcus")
-                tts.speak_openai("You can change the name anytime again.")
-                Config.set_name("Marcus")
-            else:
-                Config.set_name(entities[0])
-                tts.speak_openai("Set name to " + entities[0])
-                tts.speak_openai("You can change the name anytime again.")
-        else:
-            tts.speak_openai("No name provided. I will use the default name.")
-            tts.speak_openai("Set name to Marcus")
-            tts.speak_openai("You can change the name anytime again.")
-            Config.set_name("Marcus")
+    # def setup() -> bool:
+    #     Config.create_config("setup")
+    #     tts = TTS()
+    #     speech = Speech()
+    #     tts.speak_openai("Starting setup.")
+    #     tts.speak_openai("Please tell me the language you want to use.")
+    #     user_input = speech.recognize()
+    #     if user_input:
+    #         print(user_input)
+    #         languages = ["English", "German"]
+    #         for language in languages:
+    #             if language in user_input:
+    #                 Config.set_config("setup", "language", language)
+    #                 if language == "English":
+    #                     tts.speak_openai(f"Language set to {language}")
+    #                 elif language == "German":
+    #                     tts.speak_openai(f"Sprache auf deutsch gesetzt.")
+    #                 break
+    #         else:
+    #             tts.speak_openai("It seems you didn't set a language. I will use English by default.")
+    #             Config.set_config("setup", "language", "English")
+    #             tts.speak_openai("Language set to English")
 
-        tts.speak_openai("Setup complete.")
+    #     tts.speak_openai("Setup complete.")
 
-        return True
+    #     return True
 
     def help() -> bool:
         return True
 
     def exit():
         tts = TTS()
-        tts.speak_openai("Goodbye. I hope I was helpful.")
+        tts.speak_openai("Auf wiedersehen! Ich hoffe ich war hilfreich.")
         sys.exit(0)
 
     def test() -> bool:
         tts = TTS()
-        tts.speak_openai("You activated the test command")
-        tts.speak_openai("It worked!")
-        tts.speak_openai("Test completed")
+        tts.speak_openai("Das ist ein Testbefehl")
+        tts.speak_openai("Test erfolgreich")
         return True
 
     def alarm(times) -> bool:
         print(times)
         tts = TTS()
         if len(times) == 0:
-            tts.speak_openai("It seems you didn't provide a time for the alarm.")
-            tts.speak_openai("Please provide a time when setting an alarm.")
+            tts.speak_openai("Es scheint als hättest du keine Zeit für den Wecker angegeben.")
+            tts.speak_openai("Bitte gebe eine Zeit an, um den Wecker zu starten.")
             return False
         time = times[0]
         if len(times) > 1:
-            tts.speak_openai("It seems you provided more than one time. I will use the first time provided.")
+            tts.speak_openai("Es scheint als hättest du mehrere Zeiten für den Wecker angegeben.")
+            tts.speak_openai("Ich werde die erste, genannte Zeit für den Wecker verwenden.")
         try:
             alarm_time = parser.parse(time)
         except ValueError:
-            tts.speak_openai("It seems you provided an invalid time. Please provide a valid time.")
+            tts.speak_openai("Es scheint als die Zeit ungültig. Ich kann keinen Wecker mit der gegebenen Zeit stellen.")
             return False
 
-        print(alarm_time.strftime("%H:%M:%S"))
-        tts.speak_openai("Do you want to set a name for the alarm?")
+        print(alarm_time.strftime("%H:%M"))
+        tts.speak_openai("Ist der Wecker wiederholend?")
         speech = Speech()
-        answer = speech.recognize_no_hotword()
+        answer = speech.recognize()
         if answer:
             if "no" in answer.lower():
-                Config.set_alarm(alarm_time.strftime("%H:%M:%S"))
-                tts.speak_openai("Alarm set to " + alarm_time.strftime("%H:%M:%S") + ".")
-            else:
-                name = answer
-                Config.set_alarm(alarm_time.strftime("%H:%M:%S"), name)
-                tts.speak_openai("Alarm set to " + alarm_time.strftime("%H:%M:%S") + " with name " + name + ".")
+                Config.set_alarm(alarm_time.strftime("%H:%M"))
+                tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
+            elif "yes" in answer.lower():
+                tts.speak_openai("An welchen Tagen soll der Wecker wiederholt werden?")
+                answer = speech.recognize()
+                if not answer:
+                    tts.speak_openai("Es scheint als hättest du keine gültige Antwort gegeben. Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
+                    return True
+                days = ["montag", "dienstag", "mittwoch", "donnerstag", "freitag", "samstag", "sonntag"]
+                alarm_days = ""
+                for word in answer.lower():
+                    if word in days:
+                        alarm_days += word + ","
+                Config.set_alarm(alarm_time.strftime("%H:%M"), alarm_days)
+                tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt. Der Wecker wird {alarm_days} wiederholt.")
         else:
-            Config.set_alarm(alarm_time.strftime("%H:%M:%S"))
-            tts.speak_openai("Alarm set to " + alarm_time.strftime("%H:%M:%S") + ".")
+            Config.set_alarm(alarm_time.strftime("%H:%M"))
+            tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
         return True
+
+    def play_music(query: dict, stop_event, type:str="songs") -> bool:
+        # TODO IMPLEMENT ARTISTS and ALBUMS
+        # TODO IMPLEMENT AUTOPLAY
+        # TODO IMPLEMENT REPEAT
+        # TODO IMPLEMENT SHUFFLE
+        # TODO IMPLEMENT RANDOM TRACKS
+        # TODO IMPLEMENT CONTROLS (skip, previous, pause, resume, volume up, volume down)
+        query = query["query"]
+        tts = TTS()
+        ytmusic = YTMusic()
+        results = ytmusic.search(query, filter="songs")
+        video_id = results[0]['videoId']
+        artist = results[0]['artists'][0]['name']
+        print(video_id)
+        url = f"https://music.youtube.com/watch?v={video_id}"
+        yt = YouTube(url)
+
+        audio_stream = yt.streams.filter(only_audio=True).first()
+
+        if audio_stream:
+            destination = "output"
+            audio_stream.download(output_path=destination)
+            tts.speak_openai(f"Hier ist {audio_stream.title} von {artist}")
+            utils.stream_audio(audio_stream.default_filename,audio_stream,stop_event)
+            return True
+        else:
+            tts.speak_openai("Ich konnte den Song nicht finden.")
+            return False
+
+    def weather():
+        api_key = Config.get_config("config")["weather_key"]
+    # latitude and longitude for Berlin, Germany
+        lat = "52.5200"
+        lon = "13.4050"
+        url = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude=minutely,hourly&appid={api_key}&units=metric&lang=de"
+
+        response = requests.get(url)
+
+        print(response.status_code)
+
+        if response.status_code == 200:
+            data = response.json()
+            temparature = data['current']['temp']
+            description = data['current']['weather'][0]['description']
+            probability_precipitation = data['daily'][0]['pop']
+            tts = TTS()
+            tts.speak_openai(f"Die aktuelle Temparatur beträgt {temparature} Grad Celsius, bei {description}. Die Tiefsttemparatur ist {data['daily'][0]['temp']['min']} Grad Celsius, und die Höchstemperatur {data['daily'][0]['temp']['max']} Grad Celsius. Die Regenwahrscheinlichkeit beträgt {probability_precipitation}%.")
+            return True
+        else:
+            tts.speak_openai("Unable to fetch weather data. Please try again later.")
+            return False
