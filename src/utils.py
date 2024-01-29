@@ -139,4 +139,4 @@ def translate_en(text):
     request = requests.post(constructed_url, params=params, headers=headers, json=body)
     response = request.json()
 
-    return json.dumps(response, sort_keys=True, ensure_ascii=False, indent=4, separators=(',', ': '))['translations'][0]['text']
+    return response[0]['translations'][0]['text']

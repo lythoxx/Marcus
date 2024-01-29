@@ -19,7 +19,7 @@ class Processor:
 
         doc = self.nlp(text)
 
-        # time_pattern = re.compile(r'(\d{1,2})\.(\d{2})([ap]m)', re.IGNORECASE)
+        time_pattern = re.compile(r'(\d{1,2})\.(\d{2})([ap]m)', re.IGNORECASE)
 
         # Extract keywords based on part-of-speech tags
         keywords = [token.text for token in doc if token.pos_ in ('NOUN', 'PROPN', 'VERB')]
@@ -28,6 +28,11 @@ class Processor:
         entities = [ent.text for ent in doc.ents]
 
         times = [ent.text for ent in doc.ents if ent.label_ == 'TIME']
+
+        for time in times:
+            match = time_pattern.search(time)
+            if match:
+                times[times.index(time)] = f"{match.group(1)}:{match.group(2)}"
 
         # Combine and deduplicate
         all_keywords = list(set(keywords + entities + times))

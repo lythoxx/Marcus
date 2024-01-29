@@ -164,7 +164,7 @@ class Commands(Enum):
             tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
         return True
 
-    def play_music(query: dict, stop_event, type:str="songs") -> bool:
+    def play_music(query: dict, stop_event) -> bool:
         # TODO IMPLEMENT ARTISTS and ALBUMS
         # TODO IMPLEMENT AUTOPLAY
         # TODO IMPLEMENT REPEAT
@@ -174,24 +174,28 @@ class Commands(Enum):
         query = query["query"]
         tts = TTS()
         ytmusic = YTMusic()
-        results = ytmusic.search(query, filter="songs")
-        video_id = results[0]['videoId']
-        artist = results[0]['artists'][0]['name']
-        print(video_id)
-        url = f"https://music.youtube.com/watch?v={video_id}"
-        yt = YouTube(url)
+        results = ytmusic.search(query)
+        if results[0]['category'] == "songs":
+            video_id = results[0]['videoId']
+            url = f"https://music.youtube.com/watch?v={video_id}"
+            yt = YouTube(url)
 
-        audio_stream = yt.streams.filter(only_audio=True).first()
 
-        if audio_stream:
-            destination = "output"
-            audio_stream.download(output_path=destination)
-            tts.speak_openai(f"Hier ist {audio_stream.title} von {artist}")
-            utils.stream_audio(audio_stream.default_filename,audio_stream,stop_event)
-            return True
-        else:
-            tts.speak_openai("Ich konnte den Song nicht finden.")
-            return False
+            audio_stream = yt.streams.filter(only_audio=True).first()
+
+            if audio_stream:
+                destination = "output"
+                audio_stream.download(output_path=destination)
+                tts.speak_openai(f"Hier ist {audio_stream.title}")
+                utils.stream_audio(audio_stream.default_filename,audio_stream,stop_event)
+                return True
+            else:
+                tts.speak_openai("Ich konnte den Song nicht finden.")
+                return False
+        elif results[0]['category'] == "albums":
+            album = ytmusic.get_album(results[0]['browseId'])
+            for track in album['tracks']:
+                Commands.play_music(track['videoId'], stop_event)
 
     def weather():
         api_key = Config.get_config("config")["weather_key"]
@@ -206,12 +210,12 @@ class Commands(Enum):
 
         if response.status_code == 200:
             data = response.json()
-            temparature = data['current']['temp']
+            temperature = data['current']['temp']
             description = data['current']['weather'][0]['description']
             probability_precipitation = data['daily'][0]['pop']
             tts = TTS()
-            tts.speak_openai(f"Die aktuelle Temparatur beträgt {temparature} Grad Celsius, bei {description}. Die Tiefsttemparatur ist {data['daily'][0]['temp']['min']} Grad Celsius, und die Höchstemperatur {data['daily'][0]['temp']['max']} Grad Celsius. Die Regenwahrscheinlichkeit beträgt {probability_precipitation}%.")
+            tts.speak_openai(f"Die aktuelle Temperatur beträgt {temperature} Grad Celsius, bei {description}. Die Tiefsttemperatur ist {data['daily'][0]['temp']['min']} Grad Celsius, und die Höchstemperatur {data['daily'][0]['temp']['max']} Grad Celsius. Die Regenwahrscheinlichkeit beträgt {probability_precipitation}%.")
             return True
         else:
-            tts.speak_openai("Unable to fetch weather data. Please try again later.")
+            tts.speak_openai("Ich konnte leider keine Wetterdaten finden. Bitte versuche es später erneut.")
             return False
