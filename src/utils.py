@@ -107,7 +107,7 @@ def check_midnight():
 
 def translate_en(text):
     # Add your key and endpoint
-    key = "e7caa86cf8f14d9d84a2e3a1ab745e93"
+    key = Config.get_config("config")["translator_key"]
     endpoint = "https://api.cognitive.microsofttranslator.com"
 
     # location, also known as region.

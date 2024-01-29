@@ -24,7 +24,7 @@ class Commands(Enum):
     PLAY_MUSIC = ("play",)
     WEATHER = ("weather", "forecast", "temperature")
 
-    def get_command(keywords: list, entities: list, verbs: list, all_keywords: list):
+    def get_command(keywords: list, entities: list, all_keywords: list):
         for keyword in all_keywords:
             print(keyword)
             match keyword.lower():
@@ -60,7 +60,7 @@ class Commands(Enum):
         else:
             return None
 
-    def run_command(command, all_keywords=None, times=None, verbs=None, music_query=None) -> bool:
+    def run_command(command, times=None, music_query=None) -> bool:
         match command:
             # case Commands.SETUP:
             #     return Commands.setup()

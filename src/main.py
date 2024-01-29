@@ -77,8 +77,8 @@ def main():
         if user_input:
             print(user_input)
             # tts.speak_local(user_input)
-            keywords, entities, times, verbs, all_keywords = processor.process_keywords(user_input)
-            command = processor.process_command(keywords, entities, verbs, all_keywords)
+            keywords, entities, times, all_keywords = processor.process_keywords(user_input)
+            command = processor.process_command(keywords, entities, all_keywords)
             if command == None:
                 print("Asking AI")
                 tts.speak_openai(gpt.prompt(user_input))
@@ -90,7 +90,7 @@ def main():
                 elif command == Commands.PLAY_MUSIC:
                     manage_music_thread(command, user_input)
                 else:
-                    Commands.run_command(command, all_keywords, verbs, times)
+                    Commands.run_command(command, all_keywords, times)
             else:
                 print("Nothing happened")
                 pass
