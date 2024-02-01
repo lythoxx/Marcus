@@ -214,7 +214,7 @@ class Commands(Enum):
             description = data['current']['weather'][0]['description']
             probability_precipitation = data['daily'][0]['pop']
             tts = TTS()
-            tts.speak_openai(f"Die aktuelle Temperatur beträgt {temperature} Grad Celsius, bei {description}. Die Tiefsttemperatur ist {data['daily'][0]['temp']['min']} Grad Celsius, und die Höchstemperatur {data['daily'][0]['temp']['max']} Grad Celsius. Die Regenwahrscheinlichkeit beträgt {probability_precipitation}%.")
+            tts.speak_openai(f"Die aktuelle Temperatur beträgt {temperature} Grad Celsius, bei {description}. Die Tiefsttemperatur ist {data['daily'][0]['temp']['min']} Grad Celsius, und die Höchsttemperatur {data['daily'][0]['temp']['max']} Grad Celsius. Die Regenwahrscheinlichkeit beträgt {probability_precipitation}%.")
             return True
         else:
             tts.speak_openai("Ich konnte leider keine Wetterdaten finden. Bitte versuche es später erneut.")

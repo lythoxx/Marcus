@@ -47,7 +47,7 @@ def main():
                 "asset_path": os.path.join(os.getcwd(), "src", "components", "assets"),
                 "model_path": os.path.join(os.getcwd(), "src", "components", "models"),
                 "gpt_model_local": "mistral-7b-openorca.Q4_0.gguf",
-                "gpt_model": "gpt-4-turbo-preview",
+                "gpt_model": "gpt-3.5-turbo",
             }
             dump(config, f, indent=4)
     if not Config.config_exists("task"):
