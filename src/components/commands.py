@@ -211,7 +211,9 @@ class Commands(Enum):
         if response.status_code == 200:
             data = response.json()
             temperature = data['current']['temp']
-            description = data['current']['weather'][0]['description']
+            description_id = data['current']['weather'][0]['id']
+            description_main = data['current']['weather'][0]['main']
+            description = utils.get_weather_descriptions(description_id, description_main)
             probability_precipitation = data['daily'][0]['pop']
             tts = TTS()
             tts.speak_openai(f"Die aktuelle Temperatur beträgt {temperature} Grad Celsius, bei {description}. Die Tiefsttemperatur ist {data['daily'][0]['temp']['min']} Grad Celsius, und die Höchsttemperatur {data['daily'][0]['temp']['max']} Grad Celsius. Die Regenwahrscheinlichkeit beträgt {probability_precipitation}%.")
