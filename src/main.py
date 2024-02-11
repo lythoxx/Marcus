@@ -75,7 +75,6 @@ def main():
         user_input = speech.recognize_hotword()
         if user_input:
             print(user_input)
-            # tts.speak_local(user_input)
             keywords, entities, times, all_keywords = processor.process_keywords(user_input)
             command = processor.process_command(keywords, entities, all_keywords)
             if command == None:

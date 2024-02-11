@@ -2,7 +2,6 @@ import os
 
 import audioread
 import pyaudio
-import pyttsx3
 from openai import OpenAI
 
 from config.config import Config
@@ -11,12 +10,7 @@ from config.config import Config
 class TTS:
 
     def __init__(self):
-        self.engine = pyttsx3.init()
         self.gpt = OpenAI(api_key=Config.get_config("config")["openai_key"])
-
-    def speak_local(self, text):
-        self.engine.say(text)
-        self.engine.runAndWait()
 
     def speak_openai(self, text):
         # Ensure the output directory exists
