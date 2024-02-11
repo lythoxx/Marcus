@@ -65,15 +65,6 @@ def check_tasks(stop_alarm_event):
 
         time.sleep(10)  # Wait for 10 seconds before checking again
 
-
-def phonetic_compare(string_1: str, string_2: str):
-    soundex = fuzzy.Soundex(4)
-    return soundex(string_1) == soundex(string_2)
-
-def get_phonetic(string):
-    soundex = fuzzy.Soundex(4)
-    return soundex(string)
-
 def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
