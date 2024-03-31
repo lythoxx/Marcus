@@ -5,7 +5,6 @@ from json import dump
 from config.config import Config
 from src.components.commands import Commands
 from src.components.gpt import GPT
-from src.components.interface.interface import run
 from src.components.processor import Processor
 from src.components.speech import Speech
 from src.components.tts import TTS
@@ -58,7 +57,6 @@ def main():
             }, f, indent=4)
 
     task_thread = threading.Thread(target=check_tasks, daemon=True, args=(stop_music_event,))
-    interface_thread = threading.Thread(target=run, daemon=True)
 
     speech = Speech()
     tts = TTS()
@@ -69,7 +67,6 @@ def main():
     tts.speak_openai(f"Mein Name ist {Config.get_name()}. Wie kann ich behilflich sein?")
 
     task_thread.start()
-    interface_thread.start()
 
     while True:
         user_input = speech.recognize_hotword()

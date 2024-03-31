@@ -2,7 +2,7 @@ import re
 
 import spacy
 
-import utils
+from src import utils
 
 from .commands import Commands
 

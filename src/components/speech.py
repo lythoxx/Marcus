@@ -3,7 +3,6 @@ import os
 import speech_recognition as sr
 
 from config.config import Config
-from src.utils import phonetic_compare
 import azure.cognitiveservices.speech as speechsdk
 
 
@@ -46,31 +45,6 @@ class Speech:
         except Exception as e:
             print(e)
 
-    def recognize_dynamic_hotword(self):
-        with self.microphone as source:
-            print("Listening...")
-
-            while True:
-                audio = self.recognizer.listen(source, phrase_time_limit=self.BUFFER_DURATION)
-                self.audio_buffer.put(audio.get_raw_data())
-
-                # If the buffer is too large, remove the oldest audio
-                if self.audio_buffer.qsize() * self.BUFFER_DURATION > self.BUFFER_DURATION:
-                    self.audio_buffer.get()
-
-                # Check the audio chunk for the hotword using whisper and phonetic matching
-                try:
-                    text = self.recognizer.recognize_whisper(audio, "tiny")
-                    for word in text.lower().split(" "):
-                        if phonetic_compare(word, Config.get_name()):
-                            print(f"Hotword detected: {text}")
-                            return self.process_buffer()
-                    else:
-                        print("No hotword detected")
-                        print(text)
-                except sr.UnknownValueError:
-                    print("No hotword detected")
-                    pass  # Hotword not detected in this chunk
 
     def recognize_hotword(self):
         self.keyword_recognizer.recognized.connect(self.recognize)
