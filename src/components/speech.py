@@ -1,7 +1,5 @@
 import os
 
-import speech_recognition as sr
-
 from config.config import Config
 import azure.cognitiveservices.speech as speechsdk
 
@@ -11,10 +9,6 @@ class Speech:
     BUFFER_DURATION = 5  # Duration in seconds of the rolling audio buffer
 
     def __init__(self):
-        self.recognizer = sr.Recognizer()
-        self.recognizer.pause_threshold = 0.5
-        self.recognizer.non_speaking_duration = 0.2
-        self.microphone = sr.Microphone()
         # self.audio_buffer = queue.Queue()  # A queue to hold audio chunks
         # self.speech_config = speechsdk.SpeechConfig(subscription=Config.get_config("config")["azure_key"], region="germanywestcentral")
         self.audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
@@ -22,28 +16,6 @@ class Speech:
         self.keywordmodel = speechsdk.KeywordRecognitionModel(os.path.join(os.getcwd(), "src", "components", "models", "marcusrecognizer.table"))
         self.keyword = Config.get_name()
 
-    def process_buffer(self):
-        """
-        Process the audio in the buffer and send it to Azure for full speech recognition
-        once the hotword is detected.
-        """
-        # Combine the audio from the buffer
-        audio = sr.AudioData(b''.join(list(self.audio_buffer.queue)),
-                             self.microphone.SAMPLE_RATE,
-                             self.microphone.SAMPLE_WIDTH)
-
-        # Send the buffered audio to Azure for precise recognition
-        try:
-            azure_key = Config.get_config("config")["azure_key"]
-            return self.recognizer.recognize_azure(audio, azure_key, location="germanywestcentral", profanity="raw")[0]
-        except sr.UnknownValueError:
-            print("Azure could not understand the audio")
-            return None
-        except sr.RequestError:
-            print("Could not request results from Azure service")
-            return None
-        except Exception as e:
-            print(e)
 
 
     def recognize_hotword(self):

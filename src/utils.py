@@ -4,12 +4,10 @@ import socket
 import time
 
 import audioread
-import fuzzy
 from playsound import playsound
 import pyaudio
 import requests
 import uuid
-import json
 
 
 from config.config import Config

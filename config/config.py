@@ -1,7 +1,6 @@
 import datetime
 from json import dump, load
 import os
-from dotenv import load_dotenv
 
 class Config:
 
@@ -69,13 +68,3 @@ class Config:
             config["alarms"].remove(index)
             with open(os.path.join(Config.config_path, "task.json"), "w") as f:
                 dump(config, f, indent=4)
-
-    @staticmethod
-    def get_openai_key():
-        load_dotenv()
-        return os.getenv("OPENAI_API_KEY")
-
-    @staticmethod
-    def get_azure_key():
-        load_dotenv()
-        return os.getenv("AZURE_API_KEY")

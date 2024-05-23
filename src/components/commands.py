@@ -2,7 +2,6 @@ import sys
 from enum import Enum
 import requests
 
-import spacy
 from dateutil import parser
 from pytube import YouTube
 from ytmusicapi import YTMusic
@@ -216,7 +215,7 @@ class Commands(Enum):
             description = utils.get_weather_descriptions(description_id, description_main)
             probability_precipitation = data['daily'][0]['pop']
             tts = TTS()
-            tts.speak_openai(f"Die aktuelle Temperatur beträgt {temperature} Grad Celsius, bei {description}. Die Tiefsttemperatur ist {data['daily'][0]['temp']['min']} Grad Celsius, und die Höchsttemperatur {data['daily'][0]['temp']['max']} Grad Celsius. Die Regenwahrscheinlichkeit beträgt {probability_precipitation}%.")
+            tts.speak_openai(f"Die aktuelle Temperatur beträgt {int(temperature)} Grad Celsius, bei {description}. Die Tiefsttemperatur ist {int(data['daily'][0]['temp']['min'])} Grad Celsius, und die Höchsttemperatur {int(data['daily'][0]['temp']['max'])} Grad Celsius. Die Regenwahrscheinlichkeit beträgt {int(probability_precipitation)}%.")
             return True
         else:
             tts.speak_openai("Ich konnte leider keine Wetterdaten finden. Bitte versuche es später erneut.")
