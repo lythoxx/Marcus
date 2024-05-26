@@ -58,12 +58,17 @@ def main():
 
     task_thread = threading.Thread(target=check_tasks, daemon=True, args=(stop_music_event,))
 
+    print("Starting...")
     speech = Speech()
+    print("Speech initialized")
     tts = TTS()
+    print("TTS initialized")
     # if not os.path.exists(os.path.join(os.getcwd(), "src", "components", "models", "mistral-7b-openorca.Q4_0.gguf")):
     #     tts.speak_openai("Downloading AI model...")
     gpt = GPT()
+    print("GPT initialized")
     processor = Processor()
+    print("Processor initialized")
     tts.speak_openai(f"Mein Name ist {Config.get_name()}. Wie kann ich behilflich sein?")
 
     task_thread.start()

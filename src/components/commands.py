@@ -163,38 +163,86 @@ class Commands(Enum):
             tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
         return True
 
-    def play_music(query: dict, stop_event) -> bool:
-        # TODO IMPLEMENT ARTISTS and ALBUMS
-        # TODO IMPLEMENT AUTOPLAY
-        # TODO IMPLEMENT REPEAT
-        # TODO IMPLEMENT SHUFFLE
-        # TODO IMPLEMENT RANDOM TRACKS
-        # TODO IMPLEMENT CONTROLS (skip, previous, pause, resume, volume up, volume down)
-        query = query["query"]
-        tts = TTS()
+    def play_music(query: str) -> bool:
         ytmusic = YTMusic()
-        results = ytmusic.search(query)
-        if results[0]['category'] == "songs":
-            video_id = results[0]['videoId']
-            url = f"https://music.youtube.com/watch?v={video_id}"
-            yt = YouTube(url)
+
+        # Search without a filter
+        search_results = ytmusic.search(query)
+
+        if not search_results:
+            print("No results found.")
+            return False
+
+        # Get the first result
+        first_result = search_results[0]
+
+        # Get the type of the first result
+        result_type = first_result['resultType']
+        print(f"Result type: {result_type}")
 
 
-            audio_stream = yt.streams.filter(only_audio=True).first()
+        # Handle the result based on its type
+        if result_type == 'song':
+            # Get the audio track URL
+            audio_url = first_result['videoId']
 
-            if audio_stream:
-                destination = "output"
-                audio_stream.download(output_path=destination)
-                tts.speak_openai(f"Hier ist {audio_stream.title}")
-                utils.stream_audio(audio_stream.default_filename,audio_stream,stop_event)
-                return True
-            else:
-                tts.speak_openai("Ich konnte den Song nicht finden.")
-                return False
-        elif results[0]['category'] == "albums":
-            album = ytmusic.get_album(results[0]['browseId'])
+            # Use pytube to download and play the audio
+            yt = YouTube(f"https://www.youtube.com/watch?v={audio_url}")
+            stream = yt.streams.filter(only_audio=True).first()
+            stream.download(output_path='output', filename=f'{first_result['title']}.mp3')
+
+            # Play the audio
+            utils.play_mp3(f'output/{first_result["title"]}.mp3')
+
+        elif result_type == 'album':
+            # Get the album's track list
+            album_id = first_result['browseId']
+            album = ytmusic.get_album(album_id)
+
+            # Play each song in the album
             for track in album['tracks']:
-                Commands.play_music(track['videoId'], stop_event)
+                print(f"Playing: {track['title']}")
+                print(album)
+                utils.play_music(f"{track['title']} {album['artists'][0]['name']}")
+
+        # elif result_type == 'artist':
+        #     # Get the artist's top songs
+        #     artist_id = first_result['artists'][0]['id']
+        #     artist = ytmusic.get_artist(artist_id)
+
+        #     # Play each top song
+        #     print(artist['songs'])
+        #     for track in artist['songs']:
+        #         play_music(f"{track['title']} {artist['name']}")
+        elif result_type == "video":
+            search_results = ytmusic.search(query, filter="songs")
+            
+            if not search_results:
+                print("No results found.")
+                return False
+
+            # Get the first result
+            first_result = search_results[0]
+
+            # Get the type of the first result
+            result_type = first_result['resultType']
+            print(f"Result type: {result_type}")
+                    # Get the audio track URL
+            audio_url = first_result['videoId']
+
+            # Use pytube to download and play the audio
+            yt = YouTube(f"https://www.youtube.com/watch?v={audio_url}")
+            stream = yt.streams.filter(only_audio=True).first()
+            stream.download(output_path='output', filename=f'{first_result['title']}.mp3')
+
+            # Play the audio
+            utils.play_mp3(f'output/{first_result["title"]}.mp3')
+            
+        else:
+            print(f"Unsupported result type: {result_type}")
+            return False
+
+        return True
 
     def weather():
         api_key = Config.get_config("config")["weather_key"]
