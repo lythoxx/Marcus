@@ -68,24 +68,30 @@ def get_ip():
     s.connect(("8.8.8.8", 80))
     return s.getsockname()[0]
 
-def stream_audio(file_path, audio_stream, stop_music_event):
-    # Stream audio using PyAudio
-    with audioread.audio_open(f"output/{file_path}") as audio_file:
+def play_mp3(file_path):
+    with audioread.audio_open(file_path) as audio_file:
+        # Initialize PyAudio
         py_audio = pyaudio.PyAudio()
+
+        # Open an audio stream with the appropriate settings
         stream = py_audio.open(
             format=py_audio.get_format_from_width(2),
             channels=audio_file.channels,
             rate=audio_file.samplerate,
             output=True
         )
+
+        # Read and play the audio file in chunks
         for audio_chunk in audio_file:
-            if stop_music_event.is_set():
-                break
             stream.write(audio_chunk)
+
+        # Close the stream
         stream.stop_stream()
         stream.close()
+
+        # Terminate PyAudio
         py_audio.terminate()
-        os.remove("output/" + audio_stream.default_filename)
+        os.remove(file_path)
 
 def check_midnight():
     current_time = datetime.dateime.now().time()
