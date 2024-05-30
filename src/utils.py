@@ -68,7 +68,7 @@ def get_ip():
     s.connect(("8.8.8.8", 80))
     return s.getsockname()[0]
 
-def play_mp3(file_path):
+def play_mp3(file_path, stop_music_event):
     with audioread.audio_open(file_path) as audio_file:
         # Initialize PyAudio
         py_audio = pyaudio.PyAudio()
@@ -83,6 +83,8 @@ def play_mp3(file_path):
 
         # Read and play the audio file in chunks
         for audio_chunk in audio_file:
+            if stop_music_event.is_set():
+                break
             stream.write(audio_chunk)
 
         # Close the stream

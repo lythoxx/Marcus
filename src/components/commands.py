@@ -79,33 +79,6 @@ class Commands(Enum):
                 return False
 
 
-    # def setup() -> bool:
-    #     Config.create_config("setup")
-    #     tts = TTS()
-    #     speech = Speech()
-    #     tts.speak_openai("Starting setup.")
-    #     tts.speak_openai("Please tell me the language you want to use.")
-    #     user_input = speech.recognize()
-    #     if user_input:
-    #         print(user_input)
-    #         languages = ["English", "German"]
-    #         for language in languages:
-    #             if language in user_input:
-    #                 Config.set_config("setup", "language", language)
-    #                 if language == "English":
-    #                     tts.speak_openai(f"Language set to {language}")
-    #                 elif language == "German":
-    #                     tts.speak_openai(f"Sprache auf deutsch gesetzt.")
-    #                 break
-    #         else:
-    #             tts.speak_openai("It seems you didn't set a language. I will use English by default.")
-    #             Config.set_config("setup", "language", "English")
-    #             tts.speak_openai("Language set to English")
-
-    #     tts.speak_openai("Setup complete.")
-
-    #     return True
-
     def help() -> bool:
         return True
 
@@ -163,11 +136,18 @@ class Commands(Enum):
             tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
         return True
 
-    def play_music(query: str) -> bool:
+    def play_music(query: str, stop_music_event, filter=None) -> bool:
         ytmusic = YTMusic()
+        tts = TTS()
+        query = query.split(" ")
+        query = " ".join(query[1:])
+        filter = None
+        if "album" in query.lower():
+            filter = "albums"
+        elif "song" in query.lower() or "lied" in query.lower() or "track" in query.lower():
+            filter = "songs"
 
-        # Search without a filter
-        search_results = ytmusic.search(query)
+        search_results = ytmusic.search(query) if not filter else ytmusic.search(query, filter=filter)
 
         if not search_results:
             print("No results found.")
@@ -178,8 +158,7 @@ class Commands(Enum):
 
         # Get the type of the first result
         result_type = first_result['resultType']
-        print(f"Result type: {result_type}")
-
+        print(first_result)
 
         # Handle the result based on its type
         if result_type == 'song':
@@ -192,18 +171,18 @@ class Commands(Enum):
             stream.download(output_path='output', filename=f'{first_result['title']}.mp3')
 
             # Play the audio
-            utils.play_mp3(f'output/{first_result["title"]}.mp3')
+            tts.speak_openai(f"Jetzt spiele ich {first_result['title']} von {first_result['artists'][0]['name']}.")
+            utils.play_mp3(f'output/{first_result["title"]}.mp3', stop_music_event)
 
         elif result_type == 'album':
             # Get the album's track list
             album_id = first_result['browseId']
             album = ytmusic.get_album(album_id)
-
+            print(album)
             # Play each song in the album
+            tts.speak_openai(f"Hier ist das Album {album['title']} von {album['artists'][0]['name']}.")
             for track in album['tracks']:
-                print(f"Playing: {track['title']}")
-                print(album)
-                utils.play_music(f"{track['title']} {album['artists'][0]['name']}")
+                Commands.play_music(f"{track['title']} {album['artists'][0]['name']}", stop_music_event, filter="songs")
 
         # elif result_type == 'artist':
         #     # Get the artist's top songs
@@ -236,7 +215,7 @@ class Commands(Enum):
             stream.download(output_path='output', filename=f'{first_result['title']}.mp3')
 
             # Play the audio
-            utils.play_mp3(f'output/{first_result["title"]}.mp3')
+            utils.play_mp3(f'output/{first_result["title"]}.mp3', stop_music_event)
             
         else:
             print(f"Unsupported result type: {result_type}")

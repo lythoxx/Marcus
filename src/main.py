@@ -15,22 +15,20 @@ stop_music_event = threading.Event()
 
 music_thread = None
 
-def play_music_thread(query, stop_music_event, type="songs"):
-    Commands.play_music(query, stop_music_event, type)
+def play_music_thread(query, stop_music_event):
+    Commands.play_music(query, stop_music_event)
 
 def manage_music_thread(command, user_input):
     global music_thread
 
     if command == Commands.PLAY_MUSIC:
-        query_parts = user_input.lower().split("play", 1)
-        music_query = {"query": query_parts[1]}
 
         if music_thread is not None and music_thread.is_alive():
             stop_music_event.set()
             music_thread.join()
 
         stop_music_event.clear()
-        music_thread = threading.Thread(target=play_music_thread, daemon=True, args=(music_query, stop_music_event))
+        music_thread = threading.Thread(target=play_music_thread, daemon=True, args=(user_input, stop_music_event))
         music_thread.start()
 
     elif command == Commands.STOP:
