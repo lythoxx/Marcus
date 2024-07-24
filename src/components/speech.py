@@ -14,8 +14,6 @@ class Speech:
         self.audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
         self.keyword_recognizer = speechsdk.KeywordRecognizer(audio_config=self.audio_config)
         self.keywordmodel = speechsdk.KeywordRecognitionModel(os.path.join(os.getcwd(), "src", "components", "models", "marcusrecognizer.table"))
-        self.keyword = Config.get_name()
-
 
 
     def recognize_hotword(self):
