@@ -43,8 +43,7 @@ def main():
                 "config_path": os.path.join(os.getcwd(), "config"),
                 "asset_path": os.path.join(os.getcwd(), "src", "components", "assets"),
                 "model_path": os.path.join(os.getcwd(), "src", "components", "models"),
-                "gpt_model_local": "mistral-7b-openorca.Q4_0.gguf",
-                "gpt_model": "gpt-3.5-turbo",
+                "gpt_model": "gpt-4o-mini",
             }
             dump(config, f, indent=4)
     if not Config.config_exists("task"):
@@ -61,13 +60,11 @@ def main():
     print("Speech initialized")
     tts = TTS()
     print("TTS initialized")
-    # if not os.path.exists(os.path.join(os.getcwd(), "src", "components", "models", "mistral-7b-openorca.Q4_0.gguf")):
-    #     tts.speak_openai("Downloading AI model...")
     gpt = GPT()
     print("GPT initialized")
     processor = Processor()
     print("Processor initialized")
-    tts.speak_openai(f"Mein Name ist {Config.get_name()}. Wie kann ich behilflich sein?")
+    tts.speak_openai(f"Mein Name ist Marcus. Wie kann ich behilflich sein?")
 
     task_thread.start()
 

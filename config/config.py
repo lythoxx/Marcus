@@ -16,10 +16,6 @@ class Config:
             dump({}, f, indent=4)
 
     @staticmethod
-    def get_name():
-        return "Marcus"
-
-    @staticmethod
     def set_name(name):
         with open(os.path.join(os.getcwd(), "config", "setup.json"), "r") as f:
             config = load(f)
