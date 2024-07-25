@@ -141,13 +141,16 @@ class Commands(Enum):
         tts = TTS()
         query = query.split(" ")
         query = " ".join(query[1:])
-        filter = None
         if "album" in query.lower():
             filter = "albums"
         elif "song" in query.lower() or "lied" in query.lower() or "track" in query.lower():
             filter = "songs"
 
-        search_results = ytmusic.search(query) if not filter else ytmusic.search(query, filter=filter)
+        if filter is None:
+            search_results = ytmusic.search(query)
+        else:
+            print("Filter: " + filter)
+            search_results = ytmusic.search(query, filter=filter)
 
         if not search_results:
             print("No results found.")
@@ -158,7 +161,6 @@ class Commands(Enum):
 
         # Get the type of the first result
         result_type = first_result['resultType']
-        print(first_result)
 
         # Handle the result based on its type
         if result_type == 'song':
@@ -178,7 +180,6 @@ class Commands(Enum):
             # Get the album's track list
             album_id = first_result['browseId']
             album = ytmusic.get_album(album_id)
-            print(album)
             # Play each song in the album
             tts.speak_openai(f"Hier ist das Album {album['title']} von {album['artists'][0]['name']}.")
             for track in album['tracks']:
