@@ -2,13 +2,12 @@ import datetime
 import os
 import socket
 import time
-
-import audioread
-from playsound import playsound
-import pyaudio
-import requests
 import uuid
 
+import audioread
+import pyaudio
+import requests
+from playsound import playsound
 
 from config.config import Config
 

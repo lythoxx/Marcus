@@ -1,8 +1,9 @@
+import datetime
+
 from openai import OpenAI
 
 from config.config import Config
 
-import datetime
 
 class GPT:
 

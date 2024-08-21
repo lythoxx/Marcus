@@ -1,7 +1,8 @@
 import os
 
-from config.config import Config
 import azure.cognitiveservices.speech as speechsdk
+
+from config.config import Config
 
 
 class Speech:
