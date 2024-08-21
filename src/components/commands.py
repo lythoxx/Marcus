@@ -139,8 +139,6 @@ class Commands(Enum):
     def play_music(query: str, stop_music_event, filter=None) -> bool:
         ytmusic = YTMusic()
         tts = TTS()
-        query = query.split(" ")
-        query = " ".join(query[1:])
         if "album" in query.lower():
             filter = "albums"
         elif "song" in query.lower() or "lied" in query.lower() or "track" in query.lower():
@@ -173,7 +171,7 @@ class Commands(Enum):
             stream.download(output_path='output', filename=f'{first_result['title']}.mp3')
 
             # Play the audio
-            tts.speak_openai(f"Jetzt spiele ich {first_result['title']} von {first_result['artists'][0]['name']}.")
+            # tts.speak_openai(f"Jetzt spiele ich {first_result['title']} von {first_result['artists'][0]['name']}.")
             utils.play_mp3(f'output/{first_result["title"]}.mp3', stop_music_event)
 
         elif result_type == 'album':
@@ -196,7 +194,7 @@ class Commands(Enum):
         #         play_music(f"{track['title']} {artist['name']}")
         elif result_type == "video":
             search_results = ytmusic.search(query, filter="songs")
-            
+
             if not search_results:
                 print("No results found.")
                 return False
@@ -217,7 +215,7 @@ class Commands(Enum):
 
             # Play the audio
             utils.play_mp3(f'output/{first_result["title"]}.mp3', stop_music_event)
-            
+
         else:
             print(f"Unsupported result type: {result_type}")
             return False
