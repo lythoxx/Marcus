@@ -16,8 +16,6 @@ class GPT:
     def cleanup_history(self):
         if len(self.history) == 1:
             return
-        if len(self.history) > 20:
-            self.history = self.history[-20:]
         one_hour_ago = datetime.datetime.now() - datetime.timedelta(hours=1)
         self.history = [message for message in self.history if message["timestamp"] > one_hour_ago or message["role"] == "system"]
 

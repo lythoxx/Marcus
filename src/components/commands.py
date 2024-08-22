@@ -107,7 +107,7 @@ class Commands(Enum):
         try:
             alarm_time = parser.parse(time)
         except ValueError:
-            tts.speak_openai("Es scheint als die Zeit ungültig. Ich kann keinen Wecker mit der gegebenen Zeit stellen.")
+            tts.speak_openai("Es scheint als sei die Zeit ungültig. Ich kann keinen Wecker mit der gegebenen Zeit stellen.")
             return False
 
         print(alarm_time.strftime("%H:%M"))
@@ -130,7 +130,7 @@ class Commands(Enum):
                     if word in days:
                         alarm_days += word + ","
                 Config.set_alarm(alarm_time.strftime("%H:%M"), alarm_days)
-                tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt. Der Wecker wird {alarm_days} wiederholt.")
+                tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + f" gesetzt. Der Wecker wird {alarm_days} wiederholt.")
         else:
             Config.set_alarm(alarm_time.strftime("%H:%M"))
             tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
