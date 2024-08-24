@@ -1,6 +1,6 @@
-import datetime
 import os
 from json import dump, load
+import schedule
 
 
 class Config:
@@ -31,19 +31,17 @@ class Config:
             return config
 
     @staticmethod
-    def set_alarm(time, days:str=None):
+    def set_alarm(time, days:str|None=None):
         with open(os.path.join(Config.config_path, "task.json"), "r") as f:
             tasks = load(f)
         with open(os.path.join(Config.config_path, "task.json"), "w") as f:
             if days:
-                if datetime.datetime.strptime(time, "%H:%M") < datetime.datetime.now():
-                    pending = True
-                tasks["recurring_alarms"].append({"time": time, "days": days, "pending": pending})
+                for day in days:
+                    getattr(schedule.every(), day.lower()).at(time.strftime("%H:%M:%S")).do(lambda: print("Alarm!")) # TODO ADD ALARM FUNCTION
+                tasks["recurring_alarms"].append({"time": time, "days": days})
                 dump(tasks, f, indent=4)
             else:
-                if datetime.datetime.strptime(time, "%H:%M") < datetime.datetime.now():
-                    pending = True
-                tasks["alarms"]["unnamed"].append({"time": time, "pending": pending})
+                tasks["alarms"]["unnamed"].append({"time": time})
                 dump(tasks, f, indent=4)
 
     @staticmethod
@@ -51,7 +49,7 @@ class Config:
         with open(os.path.join(Config.config_path, "task.json"), "r") as f:
             tasks = load(f)
             return tasks["alarms"]
-        
+
     @staticmethod
     def get_recurring_alarms():
         with open(os.path.join(Config.config_path, "task.json"), "r") as f:

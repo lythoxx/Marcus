@@ -11,30 +11,6 @@ from src.components.tts import TTS
 from src.utils import check_tasks
 
 stop_alarm_event = threading.Event()
-stop_music_event = threading.Event()
-
-music_thread = None
-
-def play_music_thread(query, stop_music_event):
-    Commands.play_music(query, stop_music_event)
-
-def manage_music_thread(command, user_input):
-    global music_thread
-
-    if command == Commands.PLAY_MUSIC:
-
-        if music_thread is not None and music_thread.is_alive():
-            stop_music_event.set()
-            music_thread.join()
-
-        stop_music_event.clear()
-        music_thread = threading.Thread(target=play_music_thread, daemon=True, args=(user_input, stop_music_event))
-        music_thread.start()
-
-    elif command == Commands.STOP:
-        if music_thread is not None and music_thread.is_alive():
-            stop_music_event.set()
-            music_thread.join()
 
 def main():
     if not Config.config_exists("config"):
@@ -53,7 +29,7 @@ def main():
                 "recurring_alarms": []
             }, f, indent=4)
 
-    task_thread = threading.Thread(target=check_tasks, daemon=True, args=(stop_music_event,))
+    task_thread = threading.Thread(target=check_tasks, daemon=True, args=(stop_alarm_event,))
 
     print("Starting...")
     speech = Speech()
@@ -79,13 +55,7 @@ def main():
                 tts.speak_openai(gpt.prompt(user_input))
             elif command:
                 print("Running command")
-                if command == Commands.STOP:
-                    # TODO ALARM CHECKING
-                    manage_music_thread(command, user_input)
-                elif command == Commands.PLAY_MUSIC:
-                    manage_music_thread(command, user_input)
-                else:
-                    Commands.run_command(command, all_keywords, times)
+                Commands.run_command(command=command, user_input=user_input)
             else:
                 print("Nothing happened")
                 pass

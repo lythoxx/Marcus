@@ -21,11 +21,6 @@ def check_tasks(stop_alarm_event):
         alarms = Config.get_alarms()
         recurring_alarms = Config.get_recurring_alarms()
         for alarm in alarms:
-            if alarm["pending"]:
-                if check_midnight():
-                    alarm["pending"] = False
-                else:
-                    continue
             time_object = datetime.datetime.strptime(alarm["time"], "%H:%M:%S").time()
             if datetime.datetime.now().time() >= time_object:
                 print("An alarm is due!")  # Replace with actual task action
@@ -40,11 +35,6 @@ def check_tasks(stop_alarm_event):
                 break
 
         for recurring_alarm in recurring_alarms:
-            if recurring_alarm["pending"]:
-                if check_midnight():
-                    recurring_alarm["pending"] = False
-                else:
-                    continue
             time_object = datetime.datetime.strptime(recurring_alarm["time"], "%H:%M:%S").time()
             if datetime.datetime.now().time() >= time_object:
                 for day in recurring_alarm["days"].split(","):

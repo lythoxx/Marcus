@@ -1,3 +1,4 @@
+import random
 import sys
 from enum import Enum
 import requests
@@ -6,6 +7,7 @@ from dateutil import parser
 from pytube import YouTube
 from ytmusicapi import YTMusic
 
+from .AudioPlayer import AudioPlayer
 from config.config import Config
 
 from src import utils
@@ -13,7 +15,8 @@ from src import utils
 from .speech import Speech
 from .tts import TTS
 
-
+audio_player = AudioPlayer()
+# TODO CLEAN UP COMMANDS - IMPLEMENT PROPER WAY TO HANDLE COMMANDS
 class Commands(Enum):
     HELP = ("help",)
     EXIT = ("exit",)
@@ -22,6 +25,8 @@ class Commands(Enum):
     STOP = ("stop",)
     PLAY_MUSIC = ("play",)
     WEATHER = ("weather", "forecast", "temperature")
+    PAUSE = ("pause","break")
+    RESUME = ("resume", "continue")
 
     def get_command(keywords: list, entities: list, all_keywords: list):
         for keyword in all_keywords:
@@ -56,10 +61,16 @@ class Commands(Enum):
                 case "weather" | "forecast" | "temperature":
                     print("Found weather")
                     return Commands.WEATHER
+                case "pause" | "break":
+                    print("Found pause")
+                    return Commands.PAUSE
+                case "resume" | "continue":
+                    print("Found resume")
+                    return Commands.RESUME
         else:
             return None
 
-    def run_command(command, times=None, music_query=None) -> bool:
+    def run_command(command, times=None, user_input=None) -> bool:
         match command:
             # case Commands.SETUP:
             #     return Commands.setup()
@@ -72,9 +83,16 @@ class Commands(Enum):
             case Commands.ALARM:
                 return Commands.alarm(times)
             case Commands.PLAY_MUSIC:
-                return Commands.play_music(music_query)
+                return Commands.play_music(user_input)
             case Commands.WEATHER:
                 return Commands.weather()
+            case Commands.PAUSE:
+                return Commands.pause()
+            case Commands.STOP:
+                # TODO IMPLEMENT ALARM CHECKS
+                return Commands.stop()
+            case Commands.RESUME:
+                return Commands.resume()
             case _:
                 return False
 
@@ -136,14 +154,30 @@ class Commands(Enum):
             tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
         return True
 
-    def play_music(query: str, stop_music_event, filter=None) -> bool:
+    # TODO Implement shuffle (for albums and playlists) and repeat
+    # TODO Implement skip and previous
+    def play_music(query: str, filter=None, initial=True) -> bool:
+        global audio_player
+        if initial:
+            query = query.lower().replace("spiele", "").strip()
+        if "zufall" in query.lower() or "random" in query.lower() or "shuffle" in query.lower() or "zufällig" in query.lower():
+            shuffle = True
+            query = query.lower().replace("zufall", "").replace("random", "").replace("shuffle", "").replace("zufällig", "").strip()
+        else:
+            shuffle = False
         ytmusic = YTMusic()
-        tts = TTS()
-        if "album" in query.lower():
+        if "album" in query.lower() and not filter:
             filter = "albums"
-        elif "song" in query.lower() or "lied" in query.lower() or "track" in query.lower():
+            query = query.lower().replace("album", "").strip()
+        if ("song" in query.lower() or "lied" in query.lower() or "track" in query.lower()) and not filter and not "songs" in query.lower() and not "lieder" in query.lower() and not "tracks" in query.lower():
             filter = "songs"
-
+            query = query.lower().replace("song", "").replace("lied", "").replace("track", "").strip()
+        if ("künstler" in query.lower() or "artist" in query.lower()) and not filter:
+            filter = "artists"
+            query = query.lower().replace("künstler ", "").replace("artist", "").strip()
+            query = query.lower().replace("lieder", "").replace("songs", "").replace("tracks", "").strip()
+        query = query.strip()
+        print("Query: " + query + " | Shuffle: " + str(shuffle))
         if filter is None:
             search_results = ytmusic.search(query)
         else:
@@ -164,34 +198,36 @@ class Commands(Enum):
         if result_type == 'song':
             # Get the audio track URL
             audio_url = first_result['videoId']
-
+            print(f"Audio URL: {audio_url} | Title: {first_result['title']} | Artist: {first_result['artists'][0]['name']}")
             # Use pytube to download and play the audio
-            yt = YouTube(f"https://www.youtube.com/watch?v={audio_url}")
-            stream = yt.streams.filter(only_audio=True).first()
-            stream.download(output_path='output', filename=f'{first_result['title']}.mp3')
+            yt = f"https://www.youtube.com/watch?v={audio_url}"
+            audio_player.play(yt)
 
             # Play the audio
             # tts.speak_openai(f"Jetzt spiele ich {first_result['title']} von {first_result['artists'][0]['name']}.")
-            utils.play_mp3(f'output/{first_result["title"]}.mp3', stop_music_event)
+            # play_mp3(f'output/{first_result["title"]}.mp3')
 
         elif result_type == 'album':
             # Get the album's track list
             album_id = first_result['browseId']
             album = ytmusic.get_album(album_id)
             # Play each song in the album
-            tts.speak_openai(f"Hier ist das Album {album['title']} von {album['artists'][0]['name']}.")
-            for track in album['tracks']:
-                Commands.play_music(f"{track['title']} {album['artists'][0]['name']}", stop_music_event, filter="songs")
+            tracklist = album['tracks']
+            for track in tracklist:
+                print("-----------------")
+                print(f"Track title: {track['title']}")
+                Commands.play_music(f"{track['title']} {album['artists'][0]['name']}", filter="songs", initial=False)
 
-        # elif result_type == 'artist':
-        #     # Get the artist's top songs
-        #     artist_id = first_result['artists'][0]['id']
-        #     artist = ytmusic.get_artist(artist_id)
-
-        #     # Play each top song
-        #     print(artist['songs'])
-        #     for track in artist['songs']:
-        #         play_music(f"{track['title']} {artist['name']}")
+        elif result_type == 'artist':
+            # Get the artist's top songs
+            artist_id = first_result['browseId']
+            artist = ytmusic.get_artist(artist_id)
+            print(artist["songs"]["browseId"])
+            playlist = ytmusic.get_playlist(artist["songs"]["browseId"])
+            for song in playlist["tracks"]:
+                print("-----------------")
+                print(f"Song title: {song['title']}")
+                Commands.play_music(f"{song['title']} {artist['name']}", filter="songs", initial=False)
         elif result_type == "video":
             search_results = ytmusic.search(query, filter="songs")
 
@@ -204,22 +240,35 @@ class Commands(Enum):
 
             # Get the type of the first result
             result_type = first_result['resultType']
-            print(f"Result type: {result_type}")
+            # print(f"Result type: {result_type}")
                     # Get the audio track URL
             audio_url = first_result['videoId']
-
+            print(f"Audio URL: {audio_url} | Title: {first_result['title']} | Artist: {first_result['artists'][0]['name']}")
             # Use pytube to download and play the audio
-            yt = YouTube(f"https://www.youtube.com/watch?v={audio_url}")
-            stream = yt.streams.filter(only_audio=True).first()
-            stream.download(output_path='output', filename=f'{first_result['title']}.mp3')
+            yt = f"https://www.youtube.com/watch?v={audio_url}"
+            audio_player.play(yt)
 
             # Play the audio
-            utils.play_mp3(f'output/{first_result["title"]}.mp3', stop_music_event)
-
+            # play_mp3(f'output/{first_result["title"]}.mp3')
         else:
             print(f"Unsupported result type: {result_type}")
             return False
 
+        return True
+
+    def pause():
+        global audio_player
+        audio_player.pause()
+        return True
+    
+    def stop():
+        global audio_player
+        audio_player.stop()
+        return True
+    
+    def resume():
+        global audio_player
+        audio_player.resume()
         return True
 
     def weather():
