@@ -6,6 +6,7 @@ from yt_dlp import YoutubeDL
 import pyaudio
 from pydub import AudioSegment
 from pydub.utils import make_chunks
+import math
 
 class AudioPlayer:
     def __init__(self):
@@ -19,6 +20,12 @@ class AudioPlayer:
         self.channels = None
         self.rate = None
         self.sample_width = None
+        self.volume = 5  # Default volume level in linear is 5 (0 - 10)
+
+    def linear_to_db(self, linear_volume):
+        if linear_volume == 0:
+            return -float('inf')  # Mute
+        return (20 * math.log10(linear_volume / 10)) -10 # -20 to adjust for the volume range of PyDub
 
     def stream_audio(self, video_url):
         ydl_opts = {
@@ -47,7 +54,7 @@ class AudioPlayer:
 
             print("Making chunks...")
             # Split the audio segment into chunks and put them into the queue
-            buffer_size = 4096
+            buffer_size = 50  # Buffer size in milliseconds
             for chunk in make_chunks(audio_segment, buffer_size):
                 self.audio_queue.put(chunk.raw_data)
 
@@ -75,7 +82,8 @@ class AudioPlayer:
 
             try:
                 data = self.audio_queue.get(timeout=1)
-                self.stream.write(data)
+                adjusted_data = self.adjust_volume(data)
+                self.stream.write(adjusted_data)
             except queue.Empty:
                 if self.audio_queue.empty() and self.song_queue.empty():
                     os.remove("output/downloaded_audio.mp3")
@@ -84,6 +92,17 @@ class AudioPlayer:
                 elif self.audio_queue.empty():
                     print("Loading next song...")
                     self.play_next_song()
+
+    def adjust_volume(self, raw_data):
+        audio_segment = AudioSegment(
+            data=raw_data,
+            sample_width=self.sample_width,
+            frame_rate=self.rate,
+            channels=self.channels
+        )
+        db_volume = self.linear_to_db(self.volume)
+        adjusted_segment = audio_segment + db_volume
+        return adjusted_segment.raw_data
 
     def play(self, video_url):
         self.song_queue.put(video_url)
@@ -122,34 +141,36 @@ class AudioPlayer:
     def resume(self):
         self.pause_event.clear()
 
-    def get_threads(self):
-        return self.stream_thread
+    def increase_volume(self, step=1):
+        self.volume = min(10, self.volume + step)
 
-    def get_audio_queue(self):
-        return self.audio_queue
+    def decrease_volume(self, step=1):
+        self.volume = max(0, self.volume - step)
 
     def get_song_queue(self):
         return self.song_queue
 
+    def get_audio_queue(self):
+        return self.audio_queue
+
+    def get_threads(self):
+        return threading.enumerate()
+
+    def get_volume(self):
+        return self.volume
+
+    def set_volume(self, volume):
+        self.volume = volume
+
 # Example usage
 if __name__ == "__main__":
     player = AudioPlayer()
-    # player.play("https://www.youtube.com/watch?v=NR3xVQy8ccM")
-    player.play("https://www.youtube.com/watch?v=X7f2SdZey-Y")
+    player.play("https://www.youtube.com/watch?v=NR3xVQy8ccM")
     player.play("https://www.youtube.com/watch?v=NNWaHH9W-HA")
-    # player.play("https://www.youtube.com/watch?v=SIGqnneLUWc")
-    # player.play("https://www.youtube.com/watch?v=29x2hCviWcw")
-    # player.play("https://www.youtube.com/watch?v=KCffKIZV82w")
-    # player.play("https://www.youtube.com/watch?v=gi4H5gQDuug")
-    # player.play("https://www.youtube.com/watch?v=-IjkSMXywgg")
-    # player.play("https://www.youtube.com/watch?v=MnaHnj4HrGk")
-    # player.play("https://www.youtube.com/watch?v=eT-QlZjVmgI")
-    # player.play("https://www.youtube.com/watch?v=NacdOheIHRE")
-    # player.play("https://www.youtube.com/watch?v=XMXJ-xvrXM8")
-    # player.play("https://www.youtube.com/watch?v=Pb3G_JIKxdk")
+    player.play("https://www.youtube.com/watch?v=SIGqnneLUWc")
 
     while True:
-        command = input("Enter a command (stop, pause, resume): ")
+        command = input("Enter a command (stop, pause, resume, volume up, volume down): ")
         if command == "stop":
             player.stop()
             break
@@ -157,6 +178,14 @@ if __name__ == "__main__":
             player.pause()
         elif command == "resume":
             player.resume()
+        elif command == "volume":
+            print("Current volume: ", player.volume)
+        elif command == "volume up":
+            player.increase_volume(1)  # Increase volume by 5 dB
+        elif command == "volume down":
+            print("Decreasing volume")
+            player.decrease_volume(1)  # Decrease volume by 5 dB
+            print("New volume: ", player.volume)
         elif command == "queue":
             print(player.get_song_queue().queue)
         elif command == "audio":

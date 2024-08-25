@@ -1,5 +1,7 @@
 import os
 
+from playsound import playsound
+
 import azure.cognitiveservices.speech as speechsdk
 
 from config.config import Config
@@ -25,7 +27,6 @@ class Speech:
             result = result_future.get()
 
             if result.reason == speechsdk.ResultReason.RecognizedKeyword:
-                print("Hotword detected, start recognizing...")
                 return self.recognize()  # call your recognize method that handles the processing
 
     def recognize(self):
@@ -39,6 +40,7 @@ class Speech:
         audio_config = speechsdk.AudioConfig(use_default_microphone=True)
 
         speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config, language="de-DE")
+        playsound(os.path.join(os.getcwd(), "src", "components", "assets", "sounds", "bebeep.mp3"))
         print("Listening...")
 
         try:

@@ -177,11 +177,9 @@ class Commands(Enum):
             query = query.lower().replace("künstler ", "").replace("artist", "").strip()
             query = query.lower().replace("lieder", "").replace("songs", "").replace("tracks", "").strip()
         query = query.strip()
-        print("Query: " + query + " | Shuffle: " + str(shuffle))
         if filter is None:
             search_results = ytmusic.search(query)
         else:
-            print("Filter: " + filter)
             search_results = ytmusic.search(query, filter=filter)
 
         if not search_results:
@@ -198,7 +196,6 @@ class Commands(Enum):
         if result_type == 'song':
             # Get the audio track URL
             audio_url = first_result['videoId']
-            print(f"Audio URL: {audio_url} | Title: {first_result['title']} | Artist: {first_result['artists'][0]['name']}")
             # Use pytube to download and play the audio
             yt = f"https://www.youtube.com/watch?v={audio_url}"
             audio_player.play(yt)
@@ -214,19 +211,14 @@ class Commands(Enum):
             # Play each song in the album
             tracklist = album['tracks']
             for track in tracklist:
-                print("-----------------")
-                print(f"Track title: {track['title']}")
                 Commands.play_music(f"{track['title']} {album['artists'][0]['name']}", filter="songs", initial=False)
 
         elif result_type == 'artist':
             # Get the artist's top songs
-            artist_id = first_result['browseId']
+            artist_id = first_result['artists'][0]['id']
             artist = ytmusic.get_artist(artist_id)
-            print(artist["songs"]["browseId"])
             playlist = ytmusic.get_playlist(artist["songs"]["browseId"])
             for song in playlist["tracks"]:
-                print("-----------------")
-                print(f"Song title: {song['title']}")
                 Commands.play_music(f"{song['title']} {artist['name']}", filter="songs", initial=False)
         elif result_type == "video":
             search_results = ytmusic.search(query, filter="songs")
@@ -243,7 +235,6 @@ class Commands(Enum):
             # print(f"Result type: {result_type}")
                     # Get the audio track URL
             audio_url = first_result['videoId']
-            print(f"Audio URL: {audio_url} | Title: {first_result['title']} | Artist: {first_result['artists'][0]['name']}")
             # Use pytube to download and play the audio
             yt = f"https://www.youtube.com/watch?v={audio_url}"
             audio_player.play(yt)
