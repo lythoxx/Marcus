@@ -18,15 +18,15 @@ from .tts import TTS
 audio_player = AudioPlayer()
 # TODO CLEAN UP COMMANDS - IMPLEMENT PROPER WAY TO HANDLE COMMANDS
 class Commands(Enum):
-    HELP = ("help",)
-    EXIT = ("exit",)
+    HELP = ("help","hilfe")
+    EXIT = ("exit","quit","beenden")
     TEST = ("test",)
-    ALARM = ("alarm", "wake")
+    ALARM = ("alarm", "wake", "wecker")
     STOP = ("stop",)
-    PLAY_MUSIC = ("play",)
-    WEATHER = ("weather", "forecast", "temperature")
+    PLAY_MUSIC = ("play", "spiele")
+    WEATHER = ("weather", "forecast", "temperature", "wetter", "vorhersage", "temperatur")
     PAUSE = ("pause","break")
-    RESUME = ("resume", "continue")
+    RESUME = ("resume", "continue", "weiter", "fortsetzen")
 
     def get_command(keywords: list, entities: list, all_keywords: list):
         for keyword in all_keywords:
@@ -38,16 +38,16 @@ class Commands(Enum):
                 # case "set up":
                 #     print("Found set up")
                 #     return Commands.SETUP
-                case "help":
+                case "help" | "hilfe":
                     print("Found help")
                     return Commands.HELP
-                case "exit":
+                case "exit" | "quit" | "beenden":
                     print("Found exit")
                     return Commands.EXIT
                 case "test":
                     print("Found test")
                     return Commands.TEST
-                case "alarm" | "wake":
+                case "alarm" | "wake" | "wecker":
                     print("Found alarm")
                     if "stop" in all_keywords:
                         return Commands.STOP
@@ -55,16 +55,16 @@ class Commands(Enum):
                 case "stop":
                     print("Found stop")
                     return Commands.STOP
-                case "play":
+                case "play" | "spiele":
                     print("Found play")
                     return Commands.PLAY_MUSIC
-                case "weather" | "forecast" | "temperature":
+                case "weather" | "forecast" | "temperature" | "wetter" | "vorhersage" | "temperatur":
                     print("Found weather")
                     return Commands.WEATHER
                 case "pause" | "break":
                     print("Found pause")
                     return Commands.PAUSE
-                case "resume" | "continue":
+                case "resume" | "continue" | "weiter" | "fortsetzen":
                     print("Found resume")
                     return Commands.RESUME
         else:

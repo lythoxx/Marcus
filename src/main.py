@@ -22,6 +22,25 @@ def main():
                 "gpt_model": "gpt-4o-mini",
             }
             dump(config, f, indent=4)
+            print("Hello! I see this is your first time running Marcus.")
+            print("Let's get started by setting up some configurations.")
+            print("First, let's set the language you want to use.")
+            print("Currently, Marcus only supports English and German.")
+            language = input("Please enter 'en' for English or 'de' for German: ")
+            while language not in ["en", "de"]:
+                language = input("Invalid input. Please enter 'en' for English or 'de' for German: ")
+            Config.set_config("config", "language", language)
+            print("Language set successfully!")
+            print("Next, let's set the API keys for the services Marcus uses.")
+            print("By default, Marcus uses OpenAI and Microsoft Azure for core functionality. OpenWeatherMap is also used for weather data.")
+            openai_key = input("Please enter your OpenAI API key: ")
+            Config.set_config("config", "openai_key", openai_key)
+            azure_key = input("Please enter your Azure API key: ")
+            Config.set_config("config", "azure_key", azure_key)
+            weather_key = input("Please enter your OpenWeatherMap API key: ")
+            Config.set_config("config", "weather_key", weather_key)
+            print("API keys set successfully!")
+            print("That's it for the initial setup. You can always change these settings manually in the config file.")
     if not Config.config_exists("task"):
         with open(os.path.join(os.getcwd(), "config", "task.json"), "w") as f:
             dump({
