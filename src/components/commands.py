@@ -273,16 +273,19 @@ class Commands(Enum):
 
         print(response.status_code)
 
+        language = Config.get_config("config")["language"]
         if response.status_code == 200:
             data = response.json()
             temperature = data['current']['temp']
             description_id = data['current']['weather'][0]['id']
             description_main = data['current']['weather'][0]['main']
             description = utils.get_weather_descriptions(description_id, description_main)
+            minimum_temperature = data['daily'][0]['temp']['min']
+            maximum_temperature = data['daily'][0]['temp']['max']
             probability_precipitation = data['daily'][0]['pop']
             tts = TTS()
-            tts.speak_openai(f"Die aktuelle Temperatur beträgt {int(temperature)} Grad Celsius, bei {description}. Die Tiefsttemperatur ist {int(data['daily'][0]['temp']['min'])} Grad Celsius, und die Höchsttemperatur {int(data['daily'][0]['temp']['max'])} Grad Celsius. Die Regenwahrscheinlichkeit beträgt {int(probability_precipitation)}%.")
+            tts.speak_openai(Config.get_config("text")[language]["commands"]["weather"]["weather"].format(temperature, description, minimum_temperature, maximum_temperature, probability_precipitation))
             return True
         else:
-            tts.speak_openai("Ich konnte leider keine Wetterdaten finden. Bitte versuche es später erneut.")
+            tts.speak_openai(Config.get_config("text")[language]["commands"]["weather"]["weather_error"])
             return False

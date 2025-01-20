@@ -2,5 +2,6 @@ tests/
 __pycache__/
 src/components/models/*.gguf
 output/
-config/*.json
+config/task.json
+config/config.json
 *.env

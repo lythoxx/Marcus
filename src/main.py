@@ -30,17 +30,17 @@ def main():
             while language not in ["en", "de"]:
                 language = input("Invalid input. Please enter 'en' for English or 'de' for German: ")
             Config.set_config("config", "language", language)
-            print("Language set successfully!")
-            print("Next, let's set the API keys for the services Marcus uses.")
-            print("By default, Marcus uses OpenAI and Microsoft Azure for core functionality. OpenWeatherMap is also used for weather data.")
-            openai_key = input("Please enter your OpenAI API key: ")
+            print(Config.get_config("text")[language]["setup"]["language_set"])
+            print(Config.get_config("text")[language]["setup"]["api_keys"][0])
+            print(Config.get_config("text")[language]["setup"]["api_keys"][1])
+            openai_key = input(Config.get_config("text")[language]["setup"]["api_keys"][2])
             Config.set_config("config", "openai_key", openai_key)
-            azure_key = input("Please enter your Azure API key: ")
+            azure_key = input(Config.get_config("text")[language]["setup"]["api_keys"][3])
             Config.set_config("config", "azure_key", azure_key)
-            weather_key = input("Please enter your OpenWeatherMap API key: ")
+            weather_key = input(Config.get_config("text")[language]["setup"]["api_keys"][4])
             Config.set_config("config", "weather_key", weather_key)
-            print("API keys set successfully!")
-            print("That's it for the initial setup. You can always change these settings manually in the config file.")
+            print(Config.get_config("text")[language]["setup"]["api_keys"][5])
+            print(Config.get_config("text")[language]["setup"]["finished"])
     if not Config.config_exists("task"):
         with open(os.path.join(os.getcwd(), "config", "task.json"), "w") as f:
             dump({
@@ -59,7 +59,8 @@ def main():
     print("GPT initialized")
     processor = Processor()
     print("Processor initialized")
-    tts.speak_openai(f"Mein Name ist Marcus. Wie kann ich behilflich sein?")
+    language = Config.get_config("config")["language"]
+    tts.speak_openai(Config.get_config("text")[language]["greeting"])
 
     task_thread.start()
 
