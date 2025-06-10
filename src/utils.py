@@ -97,9 +97,9 @@ def check_midnight():
 def get_weather_descriptions(code: int, main: str) -> str | None:
     language = Config.get_config("config")["language"]
     if code in range(700, 799):
-        return Config.get_config("text")[language]["commands"]["weather"]["desc"]["7xx"][code]
+        return Config.get_config("text")[language]["commands"]["weather"]["desc"]["7xx"][str(code)]
     else:
-        return Config.get_config("text")[language]["commands"]["weather"]["desc"][main][code]
+        return Config.get_config("text")[language]["commands"]["weather"]["desc"][main][str(code)]
 
 
 def log_query(query: str, response: str, intent: str = None):
@@ -110,7 +110,7 @@ def log_query(query: str, response: str, intent: str = None):
         "timestamp": datetime.datetime.now().isoformat(),
         "uuid": str(uuid.uuid4())
     }
-    log_path = os.path.join(Config.get_config("config")["asset_path"], "logs", "queries.log")
+    log_path = os.path.join(Config.get_config("config")["log_path"], "queries.log")
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
 
     with open(log_path, "a") as log_file:
@@ -124,7 +124,7 @@ def log_error(error: str, query: str = None):
         "timestamp": datetime.datetime.now().isoformat(),
         "uuid": str(uuid.uuid4())
     }
-    log_path = os.path.join(Config.get_config("config")["asset_path"], "logs", "errors.log")
+    log_path = os.path.join(Config.get_config("config")["log_path"], "errors.log")
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
 
     with open(log_path, "a") as log_file:
@@ -139,7 +139,7 @@ def log_training(model_name: str, iterations: int, duration: float):
         "timestamp": datetime.datetime.now().isoformat(),
         "uuid": str(uuid.uuid4())
     }
-    log_path = os.path.join(Config.get_config("config")["asset_path"], "logs", "training.log")
+    log_path = os.path.join(Config.get_config("config")["log_path"], "training.log")
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
 
     with open(log_path, "a") as log_file:

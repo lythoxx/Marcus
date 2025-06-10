@@ -89,7 +89,8 @@
                         "781": "Tornados"
                     }
                 }
-            }
+            },
+            "error": "Ich konnte den Befehl nicht ausführen. Bitte versuche es später noch einmal."
         }
     },
     "en": {
@@ -182,7 +183,8 @@
                         "781": "Tornados"
                     }
                 }
-            }
+            },
+            "error": "I couldn't execute the command. Please try again later."
         }
     }
 }

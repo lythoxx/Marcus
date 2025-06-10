@@ -1,7 +1,7 @@
 import os
 import threading
 import time
-from json import dump
+from json import dumps, dump
 
 from config.config import Config
 from src.components.commands import Commands
@@ -25,34 +25,35 @@ def main():
                 "log_path": os.path.join(os.getcwd(), "logs"),
                 "gpt_model": "gpt-4.1-nano",
             }
-            dump(config, f, indent=4)
             print("Hello! I see this is your first time running Marcus.")
             print("Let's get started by setting up some configurations.")
             print("First, let's set the language you want to use.")
             print("Currently, Marcus only supports English and German.")
-            language = input("Please enter 'en' for English or 'de' for German: ")
+            language = input("Please enter 'en' for English or 'de' for German: ").lower().strip()
             while language not in ["en", "de"]:
-                language = input("Invalid input. Please enter 'en' for English or 'de' for German: ")
-            Config.set_config("config", "language", language)
+                language = input("Invalid input. Please enter 'en' for English or 'de' for German: ").lower().strip()
+            config["language"] = language
             print(Config.get_config("text")[language]["setup"]["language_set"])
             print(Config.get_config("text")[language]["setup"]["api_keys"][0])
             print(Config.get_config("text")[language]["setup"]["api_keys"][1])
             openai_key = input(Config.get_config("text")[language]["setup"]["api_keys"][2])
-            Config.set_config("config", "openai_key", openai_key)
+            config["openai_key"] = openai_key.strip()
             azure_key = input(Config.get_config("text")[language]["setup"]["api_keys"][3])
-            Config.set_config("config", "azure_key", azure_key)
+            config["azure_key"] = azure_key.strip()
             weather_key = input(Config.get_config("text")[language]["setup"]["api_keys"][4])
-            Config.set_config("config", "weather_key", weather_key)
+            config["weather_key"] = weather_key.strip()
             print(Config.get_config("text")[language]["setup"]["api_keys"][5])
             print(Config.get_config("text")[language]["setup"]["training"])
-            current_time = time.time()
-            train_intent_model(DATA)
-            utils.log_training(
-                model_name="intent_model_de",
-                iterations=20,
-                duration=time.time() - current_time
-            )
-            print(Config.get_config("text")[language]["setup"]["finished"])
+            dump(config, f, indent=4)
+
+        current_time = time.time()
+        train_intent_model(DATA, n_iter=20)
+        utils.log_training(
+            model_name="intent_model_de",
+            iterations=20,
+            duration=time.time() - current_time
+        )
+        print(Config.get_config("text")[language]["setup"]["finished"])
     if not Config.config_exists("task"):
         with open(os.path.join(os.getcwd(), "config", "task.json"), "w") as f:
             dump({
@@ -74,7 +75,7 @@ def main():
     language = Config.get_config("config")["language"]
     tts.speak_openai(Config.get_config("text")[language]["greeting"])
 
-    task_thread.start()
+    # task_thread.start()
 
     while True:
         user_input = speech.recognize_hotword()
@@ -88,5 +89,10 @@ def main():
             else:
                 keywords, entities, times, all_keywords = processor.process_keywords(user_input)
                 args = [user_input, keywords, entities, times, all_keywords]
-                Commands.execute(intent[0], args)
+                try:
+                    Commands.execute(intent[0], args)
+                except Exception as e:
+                    print(f"Error executing command: {e.with_traceback()}")
+                    tts.speak_openai(Config.get_config("text")[language]["commands"]["error"])
+                    utils.log_error(str(e), user_input)
                 utils.log_query(user_input, "Executed Command", intent[0])

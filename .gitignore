@@ -6,3 +6,4 @@ config/task.json
 config/config.json
 *.env
 src/components/models/intent_model_[a-z]*
+logs/
