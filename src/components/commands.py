@@ -195,7 +195,8 @@ class Commands:
         api_key = Config.get_config("config")["weather_key"]
         # latitude and longitude for Berlin, Germany
         lat, lon = requests.get("https://ipinfo.io/json").json()["loc"].split(",")
-        url = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude=minutely,hourly&appid={api_key}&units=metric&lang=de"
+        print(f"Using coordinates: {lat}, {lon}")
+        url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}&units=metric&lang=de"
 
         response = requests.get(url)
 
@@ -204,16 +205,20 @@ class Commands:
         language = Config.get_config("config")["language"]
         if response.status_code == 200:
             data = response.json()
-            temperature = data['current']['temp']
-            description_id = data['current']['weather'][0]['id']
-            description_main = data['current']['weather'][0]['main']
+            print(data)
+            temperature = data['main']['temp']
+            description_id = data['weather'][0]['id']
+            description_main = data['weather'][0]['main']
+            print(f"Weather description ID: {description_id}, Main: {description_main}")
             description = utils.get_weather_descriptions(description_id, description_main)
-            minimum_temperature = data['daily'][0]['temp']['min']
-            maximum_temperature = data['daily'][0]['temp']['max']
-            probability_precipitation = data['daily'][0]['pop']
+            minimum_temperature = data['main']['temp_min']
+            maximum_temperature = data['main']['temp_max']
+            probability_precipitation = data['rain']['1h']
             tts = TTS()
             tts.speak_openai(Config.get_config("text")[language]["commands"]["weather"]["weather"].format(temperature, description, minimum_temperature, maximum_temperature, probability_precipitation))
             return True
         else:
+            tts = TTS()
+            print("Error fetching weather data:", response.status_code)
             tts.speak_openai(Config.get_config("text")[language]["commands"]["weather"]["weather_error"])
             return False
