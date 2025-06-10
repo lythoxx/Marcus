@@ -2,9 +2,9 @@
 
 ## What is this project?
 
-Marcus Voice Assistant is a WOIP voice assistant to replace work in place of Amazon Alexa or Google Home.
+Marcus Voice Assistant is a WIP voice assistant to replace work in place of Amazon Alexa or Google Home.
 
-This project is using the unofficial YoutubeMusic API and is not intended for public or commercial use. This is project is intended as a proof of concept.
+This project is using the unofficial YoutubeMusic API and is not intended for public or commercial use. This project is intended as a proof of concept.
 
 ## Credits
 
