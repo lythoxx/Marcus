@@ -17,88 +17,17 @@ from .tts import TTS
 
 audio_player = AudioPlayer()
 # TODO CLEAN UP COMMANDS - IMPLEMENT PROPER WAY TO HANDLE COMMANDS
-class Commands(Enum):
-    HELP = ("help","hilfe")
-    EXIT = ("exit","quit","beenden")
-    TEST = ("test",)
-    ALARM = ("alarm", "wake", "wecker")
-    STOP = ("stop",)
-    PLAY_MUSIC = ("play", "spiele")
-    WEATHER = ("weather", "forecast", "temperature", "wetter", "vorhersage", "temperatur")
-    PAUSE = ("pause","break")
-    RESUME = ("resume", "continue", "weiter", "fortsetzen")
+class Commands:
+    def execute(intent: str, args: list) -> bool:
+        if intent == "WEATHER":
+            return Commands.weather()
+        elif intent == "EXIT":
+            Commands.exit()
+        elif intent == "MUSIC":
+            Commands.play_music(args[0])
+        elif intent == "ALARM":
+            return Commands.alarm(args)
 
-    def get_command(keywords: list, entities: list, all_keywords: list):
-        for keyword in all_keywords:
-            print(keyword)
-            match keyword.lower():
-                # case "setup":
-                #     print("Found setup")
-                #     return Commands.SETUP
-                # case "set up":
-                #     print("Found set up")
-                #     return Commands.SETUP
-                case "help" | "hilfe":
-                    print("Found help")
-                    return Commands.HELP
-                case "exit" | "quit" | "beenden":
-                    print("Found exit")
-                    return Commands.EXIT
-                case "test":
-                    print("Found test")
-                    return Commands.TEST
-                case "alarm" | "wake" | "wecker":
-                    print("Found alarm")
-                    if "stop" in all_keywords:
-                        return Commands.STOP
-                    return Commands.ALARM
-                case "stop":
-                    print("Found stop")
-                    return Commands.STOP
-                case "play" | "spiele":
-                    print("Found play")
-                    return Commands.PLAY_MUSIC
-                case "weather" | "forecast" | "temperature" | "wetter" | "vorhersage" | "temperatur":
-                    print("Found weather")
-                    return Commands.WEATHER
-                case "pause" | "break":
-                    print("Found pause")
-                    return Commands.PAUSE
-                case "resume" | "continue" | "weiter" | "fortsetzen":
-                    print("Found resume")
-                    return Commands.RESUME
-        else:
-            return None
-
-    def run_command(command, times=None, user_input=None) -> bool:
-        match command:
-            # case Commands.SETUP:
-            #     return Commands.setup()
-            case Commands.HELP:
-                return Commands.help()
-            case Commands.EXIT:
-                return Commands.exit()
-            case Commands.TEST:
-                return Commands.test()
-            case Commands.ALARM:
-                return Commands.alarm(times)
-            case Commands.PLAY_MUSIC:
-                return Commands.play_music(user_input)
-            case Commands.WEATHER:
-                return Commands.weather()
-            case Commands.PAUSE:
-                return Commands.pause()
-            case Commands.STOP:
-                # TODO IMPLEMENT ALARM CHECKS
-                return Commands.stop()
-            case Commands.RESUME:
-                return Commands.resume()
-            case _:
-                return False
-
-
-    def help() -> bool:
-        return True
 
     def exit():
         tts = TTS()
@@ -251,12 +180,12 @@ class Commands(Enum):
         global audio_player
         audio_player.pause()
         return True
-    
+
     def stop():
         global audio_player
         audio_player.stop()
         return True
-    
+
     def resume():
         global audio_player
         audio_player.resume()
@@ -264,9 +193,8 @@ class Commands(Enum):
 
     def weather():
         api_key = Config.get_config("config")["weather_key"]
-    # latitude and longitude for Berlin, Germany
-        lat = "52.5200"
-        lon = "13.4050"
+        # latitude and longitude for Berlin, Germany
+        lat, lon = requests.get("https://ipinfo.io/json").json()["loc"].split(",")
         url = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude=minutely,hourly&appid={api_key}&units=metric&lang=de"
 
         response = requests.get(url)

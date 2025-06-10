@@ -6,7 +6,6 @@ import uuid
 
 import audioread
 import pyaudio
-import requests
 from playsound import playsound
 
 from config.config import Config
@@ -52,10 +51,12 @@ def check_tasks(stop_alarm_event):
 
         time.sleep(10)  # Wait for 10 seconds before checking again
 
+
 def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
     return s.getsockname()[0]
+
 
 def play_mp3(file_path, stop_music_event):
     with audioread.audio_open(file_path) as audio_file:
@@ -84,6 +85,7 @@ def play_mp3(file_path, stop_music_event):
         py_audio.terminate()
         os.remove(file_path)
 
+
 def check_midnight():
     current_time = datetime.dateime.now().time()
     midnight = datetime.datetime.combine(datetime.datetime.now(), datetime.time(0, 0, 0))
@@ -98,3 +100,47 @@ def get_weather_descriptions(code: int, main: str) -> str | None:
         return Config.get_config("text")[language]["commands"]["weather"]["desc"]["7xx"][code]
     else:
         return Config.get_config("text")[language]["commands"]["weather"]["desc"][main][code]
+
+
+def log_query(query: str, response: str, intent: str = None):
+    log_entry = {
+        "query": query,
+        "response": response,
+        "intent": intent,
+        "timestamp": datetime.datetime.now().isoformat(),
+        "uuid": str(uuid.uuid4())
+    }
+    log_path = os.path.join(Config.get_config("config")["asset_path"], "logs", "queries.log")
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+
+    with open(log_path, "a") as log_file:
+        log_file.write(f"{log_entry}\n")
+
+
+def log_error(error: str, query: str = None):
+    error_entry = {
+        "error": error,
+        "query": query,
+        "timestamp": datetime.datetime.now().isoformat(),
+        "uuid": str(uuid.uuid4())
+    }
+    log_path = os.path.join(Config.get_config("config")["asset_path"], "logs", "errors.log")
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+
+    with open(log_path, "a") as log_file:
+        log_file.write(f"{error_entry}\n")
+
+
+def log_training(model_name: str, iterations: int, duration: float):
+    training_entry = {
+        "model_name": model_name,
+        "iterations": iterations,
+        "duration": duration,
+        "timestamp": datetime.datetime.now().isoformat(),
+        "uuid": str(uuid.uuid4())
+    }
+    log_path = os.path.join(Config.get_config("config")["asset_path"], "logs", "training.log")
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+
+    with open(log_path, "a") as log_file:
+        log_file.write(f"{training_entry}\n")

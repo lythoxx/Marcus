@@ -14,3 +14,4 @@ uuid==1.30
 schedule==1.2.2
 pytube==15.0.0
 httpx==0.27.2
+spacy-lookups-data==1.0.5

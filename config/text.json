@@ -10,6 +10,7 @@
                 "Bitte gib den API-Schlüssel für OpenweatherMap ein: ",
                 "API-Schlüssel wurden erfolgreich gesetzt."
             ],
+            "training": "Bevor du Marcus verwenden kannst, müssen wir noch ein paar Dinge abschließen.",
             "finished": "Setup abgeschlossen. Du kannst jetzt Marcus verwenden."
         },
         "greeting": "Mein Name ist Marcus. Wie kann ich behilflich sein?",
@@ -102,6 +103,7 @@
                 "Please enter the API key for OpenweatherMap: ",
                 "API keys have been successfully set."
             ],
+            "training": "Before you can start using Marcus, we need to finish up some things.",
             "finished": "Setup complete. You can now use Marcus."
         },
         "greeting": "My name is Marcus. How can I assist you?",

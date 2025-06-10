@@ -1,8 +1,6 @@
-import re
+import os
 
 import spacy
-
-from src import utils
 
 from .commands import Commands
 
@@ -40,6 +38,22 @@ class Processor:
         print("All keywords: ", all_keywords)
 
         return keywords, entities, times, all_keywords
+
+
+    def process_input(self, text: str):
+        # Load the trained intent model
+        model_path = os.path.join(os.path.dirname(__file__), "models", "intent_model_de")
+        nlp_intent = spacy.load(model_path)
+
+        doc = nlp_intent(text)
+        # Get the label with the highest score
+        if "textcat" in nlp_intent.pipe_names:
+            scores = doc.cats
+            best_label = max(scores, key=scores.get)
+            return best_label, scores[best_label]
+        else:
+            return None, 0.0
+
 
     def process_command(self, keywords: list, entities: list, all_keywords: list):
         return Commands.get_command(keywords, entities, all_keywords)
