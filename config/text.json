@@ -16,7 +16,7 @@
         "greeting": "Mein Name ist Marcus. Wie kann ich behilflich sein?",
         "commands": {
             "weather": {
-                "weather": "Die aktuelle Temparatur beträgt %s Grad Celsius, bei %s. Die Tiefsttemperatur ist %s Grad Celsius, und die Höchsttemparatur %s Grad Celsius. Die Regenwahrscheinlichkeit beträgt %s%.",
+                "weather": "Die aktuelle Temparatur beträgt {0} Grad Celsius, bei {1}. Die Tiefsttemperatur ist {2} Grad Celsius, und die Höchsttemparatur {3} Grad Celsius. Die Regenwahrscheinlichkeit beträgt {4}%.",
                 "weather_error": "Entschuldigung, ich konnte das Wetter nicht abrufen.",
                 "desc": {
                     "Thunderstorm": {
@@ -110,7 +110,7 @@
         "greeting": "My name is Marcus. How can I assist you?",
         "commands": {
             "weather": {
-                "weather": "The current temperature is %s degrees Celsius, with %s. The minimum temperature is %s degrees Celsius, and the maximum temperature is %s degrees Celsius. The probability of rain is %s%.",
+                "weather": "The current temperature is {0} degrees Celsius, with {1}. The minimum temperature is {2} degrees Celsius, and the maximum temperature is {3} degrees Celsius. The probability of rain is {4}%.",
                 "weather_error": "Sorry, I couldn't retrieve the weather.",
                 "desc": {
                     "Thunderstorm": {

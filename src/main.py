@@ -9,13 +9,13 @@ from src.components.gpt import GPT
 from src.components.processor import Processor
 from src.components.speech import Speech
 from src.components.tts import TTS
-from src.components.training import train_intent_model, DATA
+from src.components.training import train_intent_model, DATA_DE, DATA_EN
 
 import src.utils as utils
 
 stop_alarm_event = threading.Event()
 
-def main():
+async def main():
     if not Config.config_exists("config"):
         with open(os.path.join(os.getcwd(), "config", "config.json"), "w") as f:
             config = {
@@ -47,9 +47,16 @@ def main():
             dump(config, f, indent=4)
 
         current_time = time.time()
-        train_intent_model(DATA, n_iter=20)
+        train_intent_model(DATA_DE, "de_core_news_md", model_path="src/components/models/intent_model_de", n_iter=20)
         utils.log_training(
             model_name="intent_model_de",
+            iterations=20,
+            duration=time.time() - current_time
+        )
+        current_time = time.time()
+        train_intent_model(DATA_EN, "en_core_web_md", model_path="src/components/models/intent_model_en", n_iter=20)
+        utils.log_training(
+            model_name="intent_model_en",
             iterations=20,
             duration=time.time() - current_time
         )
@@ -73,7 +80,7 @@ def main():
     processor = Processor()
     print("Processor initialized")
     language = Config.get_config("config")["language"]
-    tts.speak_openai(Config.get_config("text")[language]["greeting"])
+    await tts.speak_openai(Config.get_config("text")[language]["greeting"])
 
     # task_thread.start()
 
@@ -84,15 +91,16 @@ def main():
             print(f"Intent: {intent[0]}, Score: {intent[1]}")
             if intent[0] in [None, "AI"]:
                 response = gpt.prompt(user_input)
-                tts.speak_openai(response)
+                await tts.speak_openai(response)
                 utils.log_query(user_input, response, intent[0])
             else:
                 keywords, entities, times, all_keywords = processor.process_keywords(user_input)
                 args = [user_input, keywords, entities, times, all_keywords]
                 try:
-                    Commands.execute(intent[0], args)
+                    await Commands.execute(intent[0], args)
                 except Exception as e:
-                    print(f"Error executing command: {e.with_traceback()}")
-                    tts.speak_openai(Config.get_config("text")[language]["commands"]["error"])
-                    utils.log_error(str(e), user_input)
+                    print(f"Error executing command: {e.__class__.__name__}")
+                    print(f"Error message: {e}")
+                    await tts.speak_openai(Config.get_config("text")[language]["commands"]["error"])
+                    utils.log_error(f"{e.__class__.__name__}: {e}", user_input)
                 utils.log_query(user_input, "Executed Command", intent[0])

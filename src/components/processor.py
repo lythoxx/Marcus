@@ -2,6 +2,8 @@ import os
 
 import spacy
 
+from config.config import Config
+
 from .commands import Commands
 
 
@@ -42,7 +44,7 @@ class Processor:
 
     def process_input(self, text: str):
         # Load the trained intent model
-        model_path = os.path.join(os.path.dirname(__file__), "models", "intent_model_de")
+        model_path = os.path.join(os.path.dirname(__file__), "models", f"intent_model_{Config.get_config('config')['language']}")
         nlp_intent = spacy.load(model_path)
 
         doc = nlp_intent(text)

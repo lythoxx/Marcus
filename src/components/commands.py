@@ -18,58 +18,52 @@ from .tts import TTS
 audio_player = AudioPlayer()
 # TODO CLEAN UP COMMANDS - IMPLEMENT PROPER WAY TO HANDLE COMMANDS
 class Commands:
-    def execute(intent: str, args: list) -> bool:
+    async def execute(intent: str, args: list) -> bool:
         if intent == "WEATHER":
-            return Commands.weather()
+            return await Commands.weather()
         elif intent == "EXIT":
-            Commands.exit()
+            return await Commands.exit()
         elif intent == "MUSIC":
-            Commands.play_music(args[0])
+            return await Commands.play_music(args[0])
         elif intent == "ALARM":
-            return Commands.alarm(args)
+            return await Commands.alarm(args)
 
 
-    def exit():
+    async def exit():
         tts = TTS()
-        tts.speak_openai("Auf wiedersehen! Ich hoffe ich war hilfreich.")
+        await tts.speak_openai("Auf wiedersehen! Ich hoffe ich war hilfreich.")
         sys.exit(0)
 
-    def test() -> bool:
-        tts = TTS()
-        tts.speak_openai("Das ist ein Testbefehl")
-        tts.speak_openai("Test erfolgreich")
-        return True
-
-    def alarm(times) -> bool:
+    async def alarm(times) -> bool:
         print(times)
         tts = TTS()
         if len(times) == 0:
-            tts.speak_openai("Es scheint als hättest du keine Zeit für den Wecker angegeben.")
-            tts.speak_openai("Bitte gebe eine Zeit an, um den Wecker zu starten.")
+            await tts.speak_openai("Es scheint als hättest du keine Zeit für den Wecker angegeben.")
+            await tts.speak_openai("Bitte gebe eine Zeit an, um den Wecker zu starten.")
             return False
         time = times[0]
         if len(times) > 1:
-            tts.speak_openai("Es scheint als hättest du mehrere Zeiten für den Wecker angegeben.")
-            tts.speak_openai("Ich werde die erste, genannte Zeit für den Wecker verwenden.")
+            await tts.speak_openai("Es scheint als hättest du mehrere Zeiten für den Wecker angegeben.")
+            await tts.speak_openai("Ich werde die erste, genannte Zeit für den Wecker verwenden.")
         try:
             alarm_time = parser.parse(time)
         except ValueError:
-            tts.speak_openai("Es scheint als sei die Zeit ungültig. Ich kann keinen Wecker mit der gegebenen Zeit stellen.")
+            await tts.speak_openai("Es scheint als sei die Zeit ungültig. Ich kann keinen Wecker mit der gegebenen Zeit stellen.")
             return False
 
         print(alarm_time.strftime("%H:%M"))
-        tts.speak_openai("Ist der Wecker wiederholend?")
+        await tts.speak_openai("Ist der Wecker wiederholend?")
         speech = Speech()
         answer = speech.recognize()
         if answer:
             if "no" in answer.lower():
                 Config.set_alarm(alarm_time.strftime("%H:%M"))
-                tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
+                await tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
             elif "yes" in answer.lower():
-                tts.speak_openai("An welchen Tagen soll der Wecker wiederholt werden?")
+                await tts.speak_openai("An welchen Tagen soll der Wecker wiederholt werden?")
                 answer = speech.recognize()
                 if not answer:
-                    tts.speak_openai("Es scheint als hättest du keine gültige Antwort gegeben. Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
+                    await tts.speak_openai("Es scheint als hättest du keine gültige Antwort gegeben. Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
                     return True
                 days = ["montag", "dienstag", "mittwoch", "donnerstag", "freitag", "samstag", "sonntag"]
                 alarm_days = ""
@@ -77,15 +71,15 @@ class Commands:
                     if word in days:
                         alarm_days += word + ","
                 Config.set_alarm(alarm_time.strftime("%H:%M"), alarm_days)
-                tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + f" gesetzt. Der Wecker wird {alarm_days} wiederholt.")
+                await tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + f" gesetzt. Der Wecker wird {alarm_days} wiederholt.")
         else:
             Config.set_alarm(alarm_time.strftime("%H:%M"))
-            tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
+            await tts.speak_openai("Ich habe den Wecker auf " + alarm_time.strftime("%H") + "Uhr" + alarm_time.strftime("%M") + " gesetzt.")
         return True
 
     # TODO Implement shuffle (for albums and playlists) and repeat
     # TODO Implement skip and previous
-    def play_music(query: str, filter=None, initial=True) -> bool:
+    async def play_music(query: str, filter=None, initial=True) -> bool:
         global audio_player
         if initial:
             query = query.lower().replace("spiele", "").strip()
@@ -144,7 +138,7 @@ class Commands:
 
         elif result_type == 'artist':
             # Get the artist's top songs
-            artist_id = first_result['artists'][0]['id']
+            artist_id = first_result['browseId']
             artist = ytmusic.get_artist(artist_id)
             playlist = ytmusic.get_playlist(artist["songs"]["browseId"])
             for song in playlist["tracks"]:
@@ -191,7 +185,7 @@ class Commands:
         audio_player.resume()
         return True
 
-    def weather():
+    async def weather():
         api_key = Config.get_config("config")["weather_key"]
         # latitude and longitude for Berlin, Germany
         lat, lon = requests.get("https://ipinfo.io/json").json()["loc"].split(",")
@@ -213,12 +207,12 @@ class Commands:
             description = utils.get_weather_descriptions(description_id, description_main)
             minimum_temperature = data['main']['temp_min']
             maximum_temperature = data['main']['temp_max']
-            probability_precipitation = data['rain']['1h']
+            probability_precipitation = data.get('rain', {}).get('1h', 0)  # Get the probability of precipitation in the last hour, default to 0 if not available
             tts = TTS()
-            tts.speak_openai(Config.get_config("text")[language]["commands"]["weather"]["weather"].format(temperature, description, minimum_temperature, maximum_temperature, probability_precipitation))
+            await tts.speak_openai(Config.get_config("text")[language]["commands"]["weather"]["weather"].format(temperature, description, minimum_temperature, maximum_temperature, probability_precipitation))
             return True
         else:
             tts = TTS()
             print("Error fetching weather data:", response.status_code)
-            tts.speak_openai(Config.get_config("text")[language]["commands"]["weather"]["weather_error"])
+            await tts.speak_openai(Config.get_config("text")[language]["commands"]["weather"]["weather_error"])
             return False
